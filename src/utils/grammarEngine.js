@@ -3,8 +3,12 @@
  * Built for Textify Platform by Suhas S
  */
 
-// Basic English dictionary & common misspellings dictionary
+// Expanded English dictionary & common misspellings lookup
 const COMMON_MISSPELLINGS = {
+  // Food & common words
+  eting: "eating",
+  icream: "ice cream",
+  icecream: "ice cream",
   teh: "the",
   recieve: "receive",
   seperate: "separate",
@@ -26,7 +30,31 @@ const COMMON_MISSPELLINGS = {
   tommorow: "tomorrow",
   sucessful: "successful",
   privilege: "privilege",
-  neccessary: "necessary"
+  neccessary: "necessary",
+  alot: "a lot",
+  dont: "don't",
+  wont: "won't",
+  cant: "can't",
+  im: "I'm",
+  ive: "I've",
+  id: "I'd",
+  accomodate: "accommodate",
+  achive: "achieve",
+  apparantly: "apparently",
+  calender: "calendar",
+  embarass: "embarrass",
+  foreign: "foreign",
+  guarantee: "guarantee",
+  harass: "harass",
+  immediate: "immediate",
+  independent: "independent",
+  maintenance: "maintenance",
+  noticeable: "noticeable",
+  occasion: "occasion",
+  occurrence: "occurrence",
+  relevant: "relevant",
+  rhythm: "rhythm",
+  schedule: "schedule"
 };
 
 // Common POS lexicon rules
@@ -164,8 +192,7 @@ export const detectTone = (text = "") => {
 };
 
 /**
- * Checks text for spelling, grammar, punctuation, subject-verb agreement, prepositions, articles, etc.
- * Uses matchAll to prevent infinite regex loops.
+ * Checks text for spelling, grammar, punctuation, subject-verb agreement, pronouns, etc.
  */
 export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   if (!text || !text.trim()) {
@@ -173,14 +200,29 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   }
 
   const errors = [];
-  const words = text.split(/(\s+|[.,!?;:"()])/);
-
-  // Custom dict lookup set (lowercase)
   const customDictSet = new Set(customDictionary.map((w) => w.toLowerCase()));
 
-  // Rule 1: Common Misspellings
+  // Rule 1: Lowercase single pronoun 'i' (e.g. "i am", "i go")
+  try {
+    const singleIMatches = Array.from(text.matchAll(/\b(i)\b/g));
+    singleIMatches.forEach((match) => {
+      errors.push({
+        id: `err_i_${match.index}`,
+        type: "Capitalization Error",
+        original: match[0],
+        suggestion: "I",
+        explanation: "The pronoun 'I' should always be capitalized.",
+        category: "grammar"
+      });
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Rule 2: Misspellings (Tokenized)
+  const tokens = text.split(/(\s+|[.,!?;:"()])/);
   let wordOffset = 0;
-  words.forEach((token) => {
+  tokens.forEach((token) => {
     const cleanToken = token.replace(/[^a-zA-Z]/g, "").toLowerCase();
     if (cleanToken && COMMON_MISSPELLINGS[cleanToken] && !customDictSet.has(cleanToken)) {
       const correction = COMMON_MISSPELLINGS[cleanToken];
@@ -189,14 +231,14 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
         type: "Spelling Error",
         original: token,
         suggestion: token[0] === token[0].toUpperCase() ? correction.charAt(0).toUpperCase() + correction.slice(1) : correction,
-        explanation: `"${token}" is misspelled. Recommended spelling is "${correction}".`,
+        explanation: `"${token}" is misspelled. Suggested correction is "${correction}".`,
         category: "spelling"
       });
     }
     wordOffset += token.length;
   });
 
-  // Rule 2: Repeated Words (e.g. "the the", "in in")
+  // Rule 3: Repeated Words (e.g. "the the", "in in")
   try {
     const repMatches = Array.from(text.matchAll(/\b([a-zA-Z]+)\s+\1\b/gi));
     repMatches.forEach((match) => {
@@ -213,15 +255,17 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
     console.error(e);
   }
 
-  // Rule 3: Subject-Verb Agreement & Article Errors
+  // Rule 4: Subject-Verb Agreement & Phrase Grammar Rules
   const subVerbPatterns = [
+    { regex: /\b(he|she|it)\s+(want)\b/gi, fix: "$1 wants", exp: "Use 'wants' for third-person singular subjects (he, she, it)." },
     { regex: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use 'goes' for third-person singular subjects (he, she, it)." },
     { regex: /\b(he|she|it)\s+(do)\b/gi, fix: "$1 does", exp: "Use 'does' for third-person singular subjects." },
     { regex: /\b(he|she|it)\s+(have)\b/gi, fix: "$1 has", exp: "Use 'has' instead of 'have' with singular pronouns." },
     { regex: /\b(they|we|you)\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with plural pronouns." },
     { regex: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use 'am' with pronoun 'I'." },
     { regex: /\b(a)\s+([aeiou][a-z]+)\b/gi, fix: "an $2", exp: "Use article 'an' before words starting with a vowel sound." },
-    { regex: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." }
+    { regex: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." },
+    { regex: /\b(college|school|work)\s+(everyday)\b/gi, fix: "$1 every day", exp: "Use 'every day' (two words) as an adverbial phrase meaning each day." }
   ];
 
   subVerbPatterns.forEach(({ regex, fix, exp }, i) => {

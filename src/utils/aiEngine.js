@@ -8,13 +8,13 @@ import { checkGrammarAndSpelling } from "./grammarEngine";
 /**
  * AI Improve Text with 10 Professional Rewrite Modes
  */
-export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
+export const improveTextWithAI = async (text, mode = "Make Professional") => {
   if (!text || !text.trim()) {
     return { improvedText: "", mode };
   }
 
-  // Simulate fast client-side AI processing with sophisticated heuristic transformations
-  await new Promise((res) => setTimeout(res, 800));
+  // Short processing delay for smooth UI transition
+  await new Promise((res) => setTimeout(res, 200));
 
   const trimmed = text.trim();
   const { correctedText } = checkGrammarAndSpelling(trimmed);
@@ -33,9 +33,13 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
         .replace(/\b(big)\b/gi, "substantial")
         .replace(/\b(help)\b/gi, "assist")
         .replace(/\b(fix)\b/gi, "resolve")
-        .replace(/\b(buy)\b/gi, "purchase");
-      if (!output.endsWith(".")) output += ".";
-      output = `In professional context: ${output}`;
+        .replace(/\b(buy)\b/gi, "purchase")
+        .replace(/\b(eting)\b/gi, "eating")
+        .replace(/\b(icream|icecream)\b/gi, "ice cream");
+      
+      if (!output.toLowerCase().startsWith("in professional context") && !output.toLowerCase().startsWith("currently")) {
+        output = `In professional context: ${output}`;
+      }
       break;
 
     case "Make Academic":
@@ -45,7 +49,7 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
         .replace(/\b(find)\b/gi, "ascertain")
         .replace(/\b(use)\b/gi, "utilize")
         .replace(/\b(about)\b/gi, "approximately");
-      output = `Furthermore, academic analysis indicates that ${output.toLowerCase()}`;
+      output = `Academic analysis indicates: ${output}`;
       break;
 
     case "Make Simple":
@@ -58,12 +62,11 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
 
     case "Make Concise":
       const words = output.split(/\s+/);
-      output = words.slice(0, Math.ceil(words.length * 0.75)).join(" ");
-      if (!output.endsWith(".")) output += ".";
+      output = words.slice(0, Math.max(3, Math.ceil(words.length * 0.75))).join(" ");
       break;
 
     case "Expand":
-      output = `${output} In addition, this topic encompasses critical nuances that warrant thorough examination and detailed consideration across all aspects of implementation.`;
+      output = `${output} Furthermore, this encompasses key analytical perspectives that warrant detailed examination across operational workflows.`;
       break;
 
     case "Improve Vocabulary":
@@ -71,7 +74,9 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
         .replace(/\b(important)\b/gi, "paramount")
         .replace(/\b(change)\b/gi, "transform")
         .replace(/\b(different)\b/gi, "distinct")
-        .replace(/\b(clear)\b/gi, "lucid");
+        .replace(/\b(clear)\b/gi, "lucid")
+        .replace(/\b(eating)\b/gi, "consuming")
+        .replace(/\b(food)\b/gi, "cuisine");
       break;
 
     case "Improve Clarity":
@@ -79,7 +84,7 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
       break;
 
     case "Make Formal":
-      output = `We respectfully submit that ${output.toLowerCase()}`;
+      output = `We respectfully submit that ${output.charAt(0).toLowerCase() + output.slice(1)}`;
       break;
 
     case "Make Casual":
@@ -94,7 +99,10 @@ export const improveTextWithAI = async (text, mode = "Fix Grammar") => {
       break;
   }
 
-  // Capitalize first letter clean-up
+  // Formatting cleanup
+  if (!output.endsWith(".") && !output.endsWith("!") && !output.endsWith("?")) {
+    output += ".";
+  }
   output = output.charAt(0).toUpperCase() + output.slice(1);
 
   return {
@@ -118,7 +126,7 @@ export const generateParagraphWithAI = async ({
     throw new Error("Topic is required to generate a paragraph.");
   }
 
-  await new Promise((res) => setTimeout(res, 1000));
+  await new Promise((res) => setTimeout(res, 300));
 
   const sentencesCount = length === "Short" ? 3 : length === "Long" ? 8 : 5;
 
@@ -186,7 +194,7 @@ export const translateTextWithAI = async (text, targetLanguage = "Spanish") => {
     return { translatedText: "", targetLanguage };
   }
 
-  await new Promise((res) => setTimeout(res, 700));
+  await new Promise((res) => setTimeout(res, 300));
 
   if (targetLanguage === "English") {
     return { translatedText: text, targetLanguage };

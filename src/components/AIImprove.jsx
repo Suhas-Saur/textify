@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import { Sparkles, Copy, Download, RefreshCw, Check, ArrowRight, ArrowRightLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sparkles, Copy, RefreshCw, Check, ArrowRight } from "lucide-react";
 import { improveTextWithAI } from "../utils/aiEngine";
-import { exportToPDF } from "../utils/exportPDF";
-import { exportToDOCX } from "../utils/exportDOCX";
 
 const MODES = [
   "Fix Grammar",
@@ -24,11 +22,14 @@ const AIImprove = ({ text, setText }) => {
   const [copied, setCopied] = useState(false);
   const [replaced, setReplaced] = useState(false);
 
-  const handleImprove = async () => {
-    if (!text.trim()) return;
+  const runTransformation = async (modeToUse = selectedMode, currentText = text) => {
+    if (!currentText || !currentText.trim()) {
+      setImprovedText("");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await improveTextWithAI(text, selectedMode);
+      const res = await improveTextWithAI(currentText, modeToUse);
       setImprovedText(res.improvedText);
     } catch (e) {
       console.error(e);
@@ -37,10 +38,22 @@ const AIImprove = ({ text, setText }) => {
     }
   };
 
+  // Run initial transformation on load and when text changes
+  useEffect(() => {
+    runTransformation(selectedMode, text);
+  }, [selectedMode, text]);
+
+  const handleSelectMode = (mode) => {
+    setSelectedMode(mode);
+    runTransformation(mode, text);
+  };
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(improvedText || text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (improvedText) {
+      navigator.clipboard.writeText(improvedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleReplace = () => {
@@ -66,29 +79,29 @@ const AIImprove = ({ text, setText }) => {
         </div>
 
         <button
-          onClick={handleImprove}
+          onClick={() => runTransformation(selectedMode, text)}
           disabled={loading || !text.trim()}
-          className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2 cursor-pointer"
         >
           {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          <span>{loading ? "Processing..." : "Transform Text"}</span>
+          <span>{loading ? "Transforming..." : "Re-Transform Text"}</span>
         </button>
       </div>
 
       {/* Mode Selector */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Select Transformation Mode
+          Select Transformation Mode (Click to Transform Instantly)
         </h3>
         <div className="flex flex-wrap gap-2">
           {MODES.map((mode) => (
             <button
               key={mode}
-              onClick={() => setSelectedMode(mode)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => handleSelectMode(mode)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedMode === mode
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                  ? "bg-purple-600 text-white shadow-md scale-105"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               {mode}
@@ -99,15 +112,18 @@ const AIImprove = ({ text, setText }) => {
 
       {/* Side by Side Comparison Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Original Text */}
+        {/* Editable Original Text */}
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1 flex flex-col">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Original Input Text
+              Original Input Text (Editable)
             </h3>
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-sm text-slate-800 dark:text-slate-200 min-h-[220px] whitespace-pre-wrap leading-relaxed">
-              {text || <span className="italic text-slate-400">Enter text in the Writing Assistant...</span>}
-            </div>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Enter text to improve..."
+              className="w-full flex-1 min-h-[220px] p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-slate-900 dark:text-slate-100 text-sm focus:outline-none resize-none border border-slate-200/60 dark:border-slate-700/60 leading-relaxed font-sans"
+            />
           </div>
         </div>
 
@@ -115,32 +131,40 @@ const AIImprove = ({ text, setText }) => {
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                AI Improved Output ({selectedMode})
+              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>AI Improved Output ({selectedMode})</span>
               </h3>
+              {loading && <span className="text-[11px] font-semibold text-purple-500 animate-pulse">Processing AI...</span>}
             </div>
             <div className="p-4 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-sm text-slate-900 dark:text-slate-100 min-h-[220px] whitespace-pre-wrap leading-relaxed">
-              {improvedText || <span className="italic text-slate-400">Click "Transform Text" to generate improved version...</span>}
+              {loading ? (
+                <div className="flex items-center justify-center h-48 text-purple-600">
+                  <RefreshCw className="w-6 h-6 animate-spin" />
+                </div>
+              ) : (
+                improvedText || <span className="italic text-slate-400">Select a mode above to generate improved version...</span>
+              )}
             </div>
           </div>
 
           <div className="pt-2 flex flex-wrap gap-2">
             <button
               onClick={handleCopy}
-              disabled={!improvedText}
-              className="flex-1 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+              disabled={!improvedText || loading}
+              className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {copied ? <Check className="w-4 h-4 text-teal-600" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? "Copied" : "Copy"}</span>
+              <span>{copied ? "Copied to Clipboard!" : "Copy"}</span>
             </button>
 
             <button
               onClick={handleReplace}
-              disabled={!improvedText}
-              className="flex-1 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              disabled={!improvedText || loading}
+              className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
             >
               {replaced ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-              <span>{replaced ? "Replaced!" : "Replace Original"}</span>
+              <span>{replaced ? "Replaced Original!" : "Replace Original"}</span>
             </button>
           </div>
         </div>
