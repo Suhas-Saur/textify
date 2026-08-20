@@ -101,8 +101,8 @@ const App = () => {
         setIsMobileOpen={setIsMobileOpen}
       />
 
-      {/* Main Content Area (Compact sidebar padding lg:pl-56) */}
-      <div className="lg:pl-56 flex-1 flex flex-col min-h-screen">
+      {/* Main Content Area (Sidebar padding lg:pl-60) */}
+      <div className="lg:pl-60 flex-1 flex flex-col min-h-screen">
         <Navbar
           activeTab={activeTab}
           setIsMobileOpen={setIsMobileOpen}
@@ -110,7 +110,7 @@ const App = () => {
           onExportPDF={handleExportPDF}
         />
 
-        <main className="flex-1 pb-16">
+        <main className="flex-1 pb-12">
           {activeTab === "dashboard" && (
             <Dashboard stats={{ ...stats, score }} setActiveTab={setActiveTab} />
           )}
@@ -162,7 +162,7 @@ const App = () => {
         </main>
 
         {/* Footer Credit */}
-        <footer className="py-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+        <footer className="py-3 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
           <p>
             Textify Platform © 2026 • Designed & Built by{" "}
             <a

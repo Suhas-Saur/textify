@@ -181,12 +181,12 @@ const WritingAssistant = ({
   };
 
   return (
-    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Expanded Grid: 7 cols Editor, 5 cols Error Analysis Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-4">
+      {/* 7 cols Editor, 5 cols Error Analysis Panel - Gap reduced to gap-4 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Main Editor Section (7 cols - 58%) */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[540px]">
+        <div className="lg:col-span-7 space-y-3">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[520px]">
             {/* Toolbar */}
             <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
@@ -270,18 +270,18 @@ const WritingAssistant = ({
             </div>
 
             {/* Editor Area */}
-            <div className="p-4 lg:p-6 flex-1 flex flex-col">
+            <div className="p-4 lg:p-5 flex-1 flex flex-col">
               <textarea
                 id="main-editor-textarea"
                 value={text}
                 onChange={(e) => updateTextWithHistory(e.target.value)}
                 placeholder="Write or paste your text here..."
-                className="w-full flex-1 min-h-[380px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
+                className="w-full flex-1 min-h-[360px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
               />
             </div>
 
             {/* Bottom Bar Stats */}
-            <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-500 dark:text-slate-400">
               <div className="flex items-center gap-4">
                 <span>Words: <strong className="text-slate-900 dark:text-slate-200">{stats.words}</strong></span>
                 <span>Chars: <strong className="text-slate-900 dark:text-slate-200">{stats.characters}</strong></span>
@@ -349,12 +349,12 @@ const WritingAssistant = ({
           </div>
         </div>
 
-        {/* Substantially Larger Error Analysis Panel (5 cols - 42% width) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5 min-h-[540px] flex flex-col justify-between">
+        {/* Error Analysis Panel (5 cols - 42% width) */}
+        <div className="lg:col-span-5 space-y-3">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 min-h-[520px] flex flex-col justify-between">
             <div>
               {/* Side-by-Side Header & Navigation Tabs */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSideTab("issues")}
@@ -391,7 +391,7 @@ const WritingAssistant = ({
               </div>
 
               {/* Document Metrics Bar */}
-              <div className="grid grid-cols-2 gap-3 text-xs my-4">
+              <div className="grid grid-cols-2 gap-3 text-xs my-3">
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Readability Rating</p>
                   <p className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{stats.readability}</p>
@@ -426,11 +426,11 @@ const WritingAssistant = ({
                       <p className="text-xs text-emerald-700 dark:text-emerald-400">No spelling, grammar, or punctuation errors detected.</p>
                     </div>
                   ) : (
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
                       {errors.map((err) => (
                         <div
                           key={err.id}
-                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5 text-xs shadow-xs"
+                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs shadow-xs"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs">
@@ -446,7 +446,7 @@ const WritingAssistant = ({
                             </button>
                           </div>
 
-                          <div className="space-y-1.5 text-xs">
+                          <div className="space-y-1 text-xs">
                             <p className="text-slate-600 dark:text-slate-300">
                               Incorrect: <span className="line-through text-rose-500 font-mono font-bold">{err.original}</span>
                             </p>
@@ -480,14 +480,14 @@ const WritingAssistant = ({
                     <span>AI Corrected Output (Side-by-Side)</span>
                   </h4>
 
-                  <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[260px] whitespace-pre-wrap">
+                  <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[250px] whitespace-pre-wrap">
                     {correctedText || <span className="italic text-slate-400">Corrected text will appear here...</span>}
                   </div>
 
                   <button
                     onClick={handleApplyAICorrected}
                     disabled={!text.trim() || text === correctedText}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                     <span>{appliedAI ? "Applied All AI Corrections!" : "Replace with Corrected Text"}</span>
@@ -526,9 +526,9 @@ const WritingAssistant = ({
                     ))}
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-sm text-slate-900 dark:text-slate-100 min-h-[220px] whitespace-pre-wrap leading-relaxed">
+                  <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-sm text-slate-900 dark:text-slate-100 min-h-[200px] whitespace-pre-wrap leading-relaxed">
                     {aiLoading ? (
-                      <div className="flex items-center justify-center h-44 text-purple-600">
+                      <div className="flex items-center justify-center h-40 text-purple-600">
                         <RefreshCw className="w-6 h-6 animate-spin" />
                       </div>
                     ) : (
@@ -539,7 +539,7 @@ const WritingAssistant = ({
                   <button
                     onClick={handleApplyEnhanced}
                     disabled={!enhancedText || aiLoading}
-                    className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                     <span>{appliedAI ? "Applied AI Enhancement!" : "Apply AI Enhancement"}</span>
