@@ -13,17 +13,17 @@ import CustomDictionary from "./components/CustomDictionary";
 import { calculateTextStats, checkGrammarAndSpelling } from "./utils/grammarEngine";
 import { exportToPDF } from "./utils/exportPDF";
 
-const DEFAULT_SAMPLE_TEXT = "Textify is an AI English writing, grammar, learning, and document generation platform. He go to college everyday because he want to learn knowlege and write better.";
+const DEFAULT_SAMPLE_TEXT = "Textify is an AI English writing, grammar, learning, and document generation platform. The students was preparing for their final examination, but many of them does not understand the topics properly.";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [text, setText] = useState(DEFAULT_SAMPLE_TEXT);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Dark Mode Persistence
+  // Dark Mode Persistence (Default to true for Dark Theme)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("textify_dark");
-    return saved ? JSON.parse(saved) : false;
+    return saved !== null ? JSON.parse(saved) : true;
   });
 
   useEffect(() => {
