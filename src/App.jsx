@@ -1,107 +1,181 @@
-import { useState, useRef, useEffect } from "react";
-import Header from "./components/Header";
-import Home from "./components/Home";
-import FileDisplay from "./components/FileDisplay";
-import Info from "./components/Info";
-import Transcribing from "./components/Transcribing";
-import { MessageTypes } from "./utils/presets";
+import React, { useState, useEffect, useMemo } from "react";
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import Dashboard from "./components/Dashboard";
+import WritingAssistant from "./components/WritingAssistant";
+import GrammarChecker from "./components/GrammarChecker";
+import PartsOfSpeech from "./components/PartsOfSpeech";
+import AIImprove from "./components/AIImprove";
+import ParagraphGenerator from "./components/ParagraphGenerator";
+import Translator from "./components/Translator";
+import WritingReport from "./components/WritingReport";
+import CustomDictionary from "./components/CustomDictionary";
+import { calculateTextStats, checkGrammarAndSpelling } from "./utils/grammarEngine";
+import { exportToPDF } from "./utils/exportPDF";
+
+const DEFAULT_SAMPLE_TEXT = "Textify is an AI English writing, grammar, learning, and document generation platform. He go to college everyday because he want to learn knowlege and write better.";
+
 const App = () => {
-  const [file, setFile] = useState(null);
-  const [audioStream, setAudioStream] = useState(null);
-  const [output, setOutput] = useState(null);
-  const [downloading, setDownloading] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const isAudioAvailable = file || audioStream;
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [text, setText] = useState(DEFAULT_SAMPLE_TEXT);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  function handleAudioReset() {
-    setAudioStream(null);
-    setFile(null);
-  }
+  // Dark Mode Persistence
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("textify_dark");
+    return saved ? JSON.parse(saved) : false;
+  });
 
-  const worker = useRef(null);
   useEffect(() => {
-    if (!worker.current) {
-      worker.current = new Worker(
-        new URL("./utils/whisper.worker.js", import.meta.url),
-        { type: "module" }
-      );
-      console.log("Worker initialized");
+    localStorage.setItem("textify_dark", JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
+  }, [darkMode]);
 
-    const onMessageReceived = (e) => {
-      // console.log("Message received from worker:", e.data);
-      switch (e.data.type) {
-        case MessageTypes.DOWNLOADING:
-          setDownloading(true);
-          setProgress(e.data.progress);
-          console.log("DOWNLOADING");
-          break;
-        case MessageTypes.LOADING:
-          setLoading(true);
-          console.log("LOADING");
-          break;
-        case MessageTypes.RESULT:
-          setOutput(e.data.results);
-          console.log("RESULT RECEIVED", e.data.results);
-          break;
-        case MessageTypes.INFERENCE_DONE:
-          setFinished(true);
-          setDownloading(false);
-          console.log("INFERENCE DONE");
-          break;
-        default:
-          console.log("Unknown message type", e.data.type);
-          break;
-      }
-    };
+  // Custom Dictionary Persistence
+  const [dictionary, setDictionary] = useState(() => {
+    const saved = localStorage.getItem("textify_dict");
+    return saved ? JSON.parse(saved) : ["Textify", "Suhas", "Netlify"];
+  });
 
-    worker.current.addEventListener("message", onMessageReceived);
-
-    return () => {
-      worker.current.removeEventListener("message", onMessageReceived);
-      console.log("Worker event listener removed");
-    };
-  }, []);
-
-  const readAudio = async (file) => {
-    const sampling_rate = 16000;
-    const audioCTX = new AudioContext({ sampleRate: sampling_rate });
-    const response = await file.arrayBuffer();
-    const decoded = await audioCTX.decodeAudioData(response);
-    const audio = decoded.getChannelData(0);
-    return audio;
+  const handleAddWord = (word) => {
+    if (!dictionary.includes(word)) {
+      const updated = [...dictionary, word];
+      setDictionary(updated);
+      localStorage.setItem("textify_dict", JSON.stringify(updated));
+    }
   };
-  const handleFormSubmission = async () => {
-    if (!file && !audioStream) return;
-    let audio = await readAudio(file ? file : audioStream);
-    const model = "Xenova/whisper-small";
-    worker.current.postMessage({
-      type: MessageTypes.INFERENCE_REQUEST,
-      audio,
-      model,
+
+  const handleRemoveWord = (word) => {
+    const updated = dictionary.filter((w) => w !== word);
+    setDictionary(updated);
+    localStorage.setItem("textify_dict", JSON.stringify(updated));
+  };
+
+  // Real-Time Analysis
+  const stats = useMemo(() => calculateTextStats(text), [text]);
+  const { errors, score, correctedText } = useMemo(
+    () => checkGrammarAndSpelling(text, dictionary),
+    [text, dictionary]
+  );
+
+  const handleApplyCorrection = (err) => {
+    setText((prev) => prev.replace(err.original, err.suggestion));
+  };
+
+  const handleIgnoreError = (errId) => {
+    // Ignored dynamically for current session
+  };
+
+  const handleApplyAll = () => {
+    setText(correctedText);
+  };
+
+  const handleResetText = () => {
+    setText("");
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF({
+      title: "Textify Platform Export",
+      content: text,
+      stats,
+      errors,
+      score,
+      filename: "Textify_Document"
     });
   };
+
   return (
-    <div className="flex flex-col mx-auto w-full ">
-      <Header />
-      <section className="min-h-screen flex flex-col bg-gradient-to-b from-teal-200 to-white">
-        {output ? (
-          <Info output={output} />
-        ) : loading ? (
-          <Transcribing downloading={downloading} progress={progress} />
-        ) : isAudioAvailable ? (
-          <FileDisplay
-            handleFormSubmission={handleFormSubmission}
-            handleAudioReset={handleAudioReset}
-            file={file}
-            audioStream={audioStream}
-          />
-        ) : (
-          <Home setFile={setFile} setAudioStream={setAudioStream} />
-        )}
-      </section>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+      />
+
+      {/* Main Content Area */}
+      <div className="lg:pl-64 flex-1 flex flex-col min-h-screen">
+        <Navbar
+          activeTab={activeTab}
+          setIsMobileOpen={setIsMobileOpen}
+          onResetText={handleResetText}
+          onExportPDF={handleExportPDF}
+        />
+
+        <main className="flex-1 pb-16">
+          {activeTab === "dashboard" && (
+            <Dashboard stats={{ ...stats, score }} setActiveTab={setActiveTab} />
+          )}
+
+          {activeTab === "writing-assistant" && (
+            <WritingAssistant
+              text={text}
+              setText={setText}
+              stats={stats}
+              errors={errors}
+              score={score}
+              onCheckText={() => setActiveTab("grammar-check")}
+              onApplyCorrection={handleApplyCorrection}
+              onIgnoreError={handleIgnoreError}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {activeTab === "grammar-check" && (
+            <GrammarChecker
+              errors={errors}
+              onApplyCorrection={handleApplyCorrection}
+              onIgnoreError={handleIgnoreError}
+              onApplyAll={handleApplyAll}
+              text={text}
+              setText={setText}
+            />
+          )}
+
+          {activeTab === "parts-of-speech" && <PartsOfSpeech text={text} />}
+
+          {activeTab === "ai-improve" && <AIImprove text={text} setText={setText} />}
+
+          {activeTab === "paragraph-generator" && <ParagraphGenerator />}
+
+          {activeTab === "translator" && <Translator text={text} />}
+
+          {activeTab === "writing-report" && (
+            <WritingReport text={text} stats={stats} errors={errors} score={score} />
+          )}
+
+          {activeTab === "dictionary" && (
+            <CustomDictionary
+              dictionary={dictionary}
+              onAddWord={handleAddWord}
+              onRemoveWord={handleRemoveWord}
+            />
+          )}
+        </main>
+
+        {/* Footer Credit */}
+        <footer className="py-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+          <p>
+            Textify Platform © 2026 • Designed & Built by{" "}
+            <a
+              href="https://www.linkedin.com/in/suhas-s-081b84335"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-teal-600 dark:text-teal-400 hover:underline"
+            >
+              Suhas S
+            </a>
+          </p>
+        </footer>
+      </div>
     </div>
   );
 };
