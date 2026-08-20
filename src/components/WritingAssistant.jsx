@@ -35,6 +35,52 @@ const WritingAssistant = ({
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingDOCX, setExportingDOCX] = useState(false);
 
+  // Undo / Redo History Stack
+  const [history, setHistory] = useState([text]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  const updateTextWithHistory = (newVal) => {
+    setText(newVal);
+    const newHist = history.slice(0, historyIndex + 1);
+    newHist.push(newVal);
+    setHistory(newHist);
+    setHistoryIndex(newHist.length - 1);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prev = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      setText(prev);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const next = history[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      setText(next);
+    }
+  };
+
+  const handleFormatText = (prefix, suffix = prefix) => {
+    const textarea = document.getElementById("main-editor-textarea");
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = text.substring(start, end) || "text";
+    const replacement = `${prefix}${selected}${suffix}`;
+
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    updateTextWithHistory(newText);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    }, 0);
+  };
+
   const handleCopy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -88,30 +134,51 @@ const WritingAssistant = ({
             <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => document.execCommand("bold", false, null)}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  title="Bold"
+                  onClick={() => handleFormatText("**")}
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                  title="Bold (**text**)"
                 >
                   <Bold className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => document.execCommand("italic", false, null)}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  title="Italic"
+                  onClick={() => handleFormatText("*")}
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 italic"
+                  title="Italic (*text*)"
                 >
                   <Italic className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => document.execCommand("underline", false, null)}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  title="Underline"
+                  onClick={() => handleFormatText("<u>", "</u>")}
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline"
+                  title="Underline (<u>text</u>)"
                 >
                   <Underline className="w-4 h-4" />
                 </button>
+
                 <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
+
                 <button
-                  onClick={() => setText("")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-rose-100 text-rose-600 dark:hover:bg-rose-950/40"
+                  onClick={handleUndo}
+                  disabled={historyIndex <= 0}
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30"
+                  title="Undo"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleRedo}
+                  disabled={historyIndex >= history.length - 1}
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30"
+                  title="Redo"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+
+                <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
+
+                <button
+                  onClick={() => updateTextWithHistory("")}
+                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40"
                   title="Clear Text"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -148,8 +215,9 @@ const WritingAssistant = ({
             {/* Editor Area */}
             <div className="p-4 lg:p-6 flex-1 flex flex-col">
               <textarea
+                id="main-editor-textarea"
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => updateTextWithHistory(e.target.value)}
                 placeholder="Write or paste your text here..."
                 className="w-full flex-1 min-h-[350px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
               />
@@ -173,7 +241,7 @@ const WritingAssistant = ({
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
               onClick={onCheckText}
-              className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Check Text</span>
@@ -181,7 +249,7 @@ const WritingAssistant = ({
 
             <button
               onClick={() => setActiveTab("ai-improve")}
-              className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>AI Improve</span>
@@ -189,7 +257,7 @@ const WritingAssistant = ({
 
             <button
               onClick={() => setActiveTab("parts-of-speech")}
-              className="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              className="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <Tags className="w-4 h-4" />
               <span>POS Tags</span>
@@ -197,7 +265,7 @@ const WritingAssistant = ({
 
             <button
               onClick={() => setActiveTab("translator")}
-              className="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              className="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <Languages className="w-4 h-4" />
               <span>Translate</span>
@@ -205,7 +273,7 @@ const WritingAssistant = ({
 
             <button
               onClick={() => setActiveTab("writing-report")}
-              className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all col-span-2 sm:col-span-1"
+              className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer col-span-2 sm:col-span-1"
             >
               <BarChart3 className="w-4 h-4" />
               <span>Report</span>
@@ -263,7 +331,7 @@ const WritingAssistant = ({
                         </span>
                         <button
                           onClick={() => onIgnoreError(err.id)}
-                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                           title="Ignore"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -284,7 +352,7 @@ const WritingAssistant = ({
 
                       <button
                         onClick={() => onApplyCorrection(err)}
-                        className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1"
+                        className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Apply Correction</span>
