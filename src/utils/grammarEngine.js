@@ -47,7 +47,7 @@ const POS_LEXICON = {
   with: "Preposition", about: "Preposition", against: "Preposition", between: "Preposition",
   into: "Preposition", through: "Preposition", during: "Preposition", before: "Preposition",
   after: "Preposition", above: "Preposition", below: "Preposition", from: "Preposition",
-  up: "Preposition", down: "Preposition", in: "Preposition", out: "Preposition", off: "Preposition",
+  up: "Preposition", down: "Preposition", out: "Preposition", off: "Preposition",
   over: "Preposition", under: "Preposition", again: "Preposition", further: "Preposition",
 
   // Conjunctions
@@ -64,7 +64,7 @@ const POS_LEXICON = {
  * Calculates text statistics
  */
 export const calculateTextStats = (text = "") => {
-  if (!text.trim()) {
+  if (!text || !text.trim()) {
     return {
       words: 0,
       characters: 0,
@@ -165,6 +165,7 @@ export const detectTone = (text = "") => {
 
 /**
  * Checks text for spelling, grammar, punctuation, subject-verb agreement, prepositions, articles, etc.
+ * Uses matchAll to prevent infinite regex loops.
  */
 export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   if (!text || !text.trim()) {
@@ -196,42 +197,49 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   });
 
   // Rule 2: Repeated Words (e.g. "the the", "in in")
-  const repeatedRegex = /\b([a-zA-Z]+)\s+\1\b/gi;
-  let match;
-  while ((match = repeatedRegex.exec(text)) !== null) {
-    errors.push({
-      id: `err_rep_${match.index}`,
-      type: "Repeated Word",
-      original: match[0],
-      suggestion: match[1],
-      explanation: `Duplicate word "${match[1]}". Consider removing the repeated instance.`,
-      category: "grammar"
-    });
-  }
-
-  // Rule 3: Subject-Verb Agreement Errors (e.g. "He go to", "She do not", "They is")
-  const subVerbPatterns = [
-    { pattern: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use 'goes' for third-person singular subjects (he, she, it)." },
-    { pattern: /\b(he|she|it)\s+(do)\b/gi, fix: "$1 does", exp: "Use 'does' for third-person singular subjects." },
-    { pattern: /\b(he|she|it)\s+(have)\b/gi, fix: "$1 has", exp: "Use 'has' instead of 'have' with singular pronouns." },
-    { pattern: /\b(they|we|you)\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with plural pronouns." },
-    { pattern: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use 'am' with pronoun 'I'." },
-    { pattern: /\b(a)\s+([aeiou][a-z]+)\b/gi, fix: "an $2", exp: "Use article 'an' before words starting with a vowel sound." },
-    { pattern: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." }
-  ];
-
-  subVerbPatterns.forEach(({ pattern, fix, exp }, i) => {
-    let pMatch;
-    while ((pMatch = pattern.exec(text)) !== null) {
-      const replacement = pMatch[0].replace(pattern, fix);
+  try {
+    const repMatches = Array.from(text.matchAll(/\b([a-zA-Z]+)\s+\1\b/gi));
+    repMatches.forEach((match) => {
       errors.push({
-        id: `err_sv_${i}_${pMatch.index}`,
-        type: "Grammar Error",
-        original: pMatch[0],
-        suggestion: replacement,
-        explanation: exp,
+        id: `err_rep_${match.index}`,
+        type: "Repeated Word",
+        original: match[0],
+        suggestion: match[1],
+        explanation: `Duplicate word "${match[1]}". Consider removing the repeated instance.`,
         category: "grammar"
       });
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Rule 3: Subject-Verb Agreement & Article Errors
+  const subVerbPatterns = [
+    { regex: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use 'goes' for third-person singular subjects (he, she, it)." },
+    { regex: /\b(he|she|it)\s+(do)\b/gi, fix: "$1 does", exp: "Use 'does' for third-person singular subjects." },
+    { regex: /\b(he|she|it)\s+(have)\b/gi, fix: "$1 has", exp: "Use 'has' instead of 'have' with singular pronouns." },
+    { regex: /\b(they|we|you)\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with plural pronouns." },
+    { regex: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use 'am' with pronoun 'I'." },
+    { regex: /\b(a)\s+([aeiou][a-z]+)\b/gi, fix: "an $2", exp: "Use article 'an' before words starting with a vowel sound." },
+    { regex: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." }
+  ];
+
+  subVerbPatterns.forEach(({ regex, fix, exp }, i) => {
+    try {
+      const matches = Array.from(text.matchAll(new RegExp(regex.source, "gi")));
+      matches.forEach((pMatch) => {
+        const replacement = pMatch[0].replace(new RegExp(regex.source, "i"), fix);
+        errors.push({
+          id: `err_sv_${i}_${pMatch.index}`,
+          type: "Grammar Error",
+          original: pMatch[0],
+          suggestion: replacement,
+          explanation: exp,
+          category: "grammar"
+        });
+      });
+    } catch (e) {
+      console.error(e);
     }
   });
 
