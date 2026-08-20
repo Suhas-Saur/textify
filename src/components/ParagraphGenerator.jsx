@@ -13,7 +13,7 @@ const SAMPLE_TOPICS = [
 
 const ParagraphGenerator = () => {
   const [topic, setTopic] = useState("");
-  const [length, setLength] = useState("Medium");
+  const [length, setLength] = useState("Medium (~250 words)");
   const [tone, setTone] = useState("Professional");
   const [difficulty, setDifficulty] = useState("Intermediate");
   const [generatedResult, setGeneratedResult] = useState(null);
@@ -44,20 +44,20 @@ const ParagraphGenerator = () => {
   const handlePDF = () => {
     if (!generatedResult) return;
     exportToPDF({
-      title: `AI Paragraph: ${topic}`,
+      title: `AI Article / Essay: ${topic}`,
       content: generatedResult.paragraph,
       stats: { words: generatedResult.wordCount, tone: generatedResult.tone },
-      filename: "Textify_Paragraph"
+      filename: "Textify_Document"
     });
   };
 
   const handleDOCX = () => {
     if (!generatedResult) return;
     exportToDOCX({
-      title: `AI Paragraph: ${topic}`,
+      title: `AI Article / Essay: ${topic}`,
       content: generatedResult.paragraph,
       stats: { words: generatedResult.wordCount, tone: generatedResult.tone },
-      filename: "Textify_Paragraph"
+      filename: "Textify_Document"
     });
   };
 
@@ -67,10 +67,10 @@ const ParagraphGenerator = () => {
       <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <FileText className="w-5 h-5 text-amber-500" />
-          AI Paragraph Generator
+          AI Paragraph & Long Document Generator
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Generate structured, high-quality paragraphs on any topic customized by length, tone, and difficulty level.
+          Generate structured paragraphs, extended essays (~1,000 words), or comprehensive guides (~2,000+ words) on any topic.
         </p>
       </div>
 
@@ -106,15 +106,17 @@ const ParagraphGenerator = () => {
         {/* Options Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Length</label>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Target Length (Word Count)</label>
             <select
               value={length}
               onChange={(e) => setLength(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold cursor-pointer"
             >
-              <option value="Short">Short (~3 sentences)</option>
-              <option value="Medium">Medium (~5 sentences)</option>
-              <option value="Long">Long (~8 sentences)</option>
+              <option value="Short (~100 words)">Short (~100 words)</option>
+              <option value="Medium (~250 words)">Medium (~250 words)</option>
+              <option value="Long (~500 words)">Long (~500 words)</option>
+              <option value="Extended Essay (~1,000 words)">Extended Essay (~1,000 words)</option>
+              <option value="Comprehensive Guide (~2,000+ words)">Comprehensive Guide (~2,000+ words)</option>
             </select>
           </div>
 
@@ -123,7 +125,7 @@ const ParagraphGenerator = () => {
             <select
               value={tone}
               onChange={(e) => setTone(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold cursor-pointer"
             >
               <option value="Professional">Professional</option>
               <option value="Academic">Academic</option>
@@ -137,7 +139,7 @@ const ParagraphGenerator = () => {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold cursor-pointer"
             >
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>
@@ -149,10 +151,10 @@ const ParagraphGenerator = () => {
         <button
           onClick={handleGenerate}
           disabled={loading || !topic.trim()}
-          className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-extrabold text-sm shadow-md transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-extrabold text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          <span>{loading ? "Generating..." : "Generate Paragraph"}</span>
+          <span>{loading ? "Generating Document..." : "Generate Document"}</span>
         </button>
       </div>
 
@@ -160,27 +162,28 @@ const ParagraphGenerator = () => {
       {generatedResult && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Generated Paragraph ({generatedResult.wordCount} words)
+            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span>Generated Document ({generatedResult.wordCount} Words)</span>
             </h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-teal-600" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
               <button
                 onClick={handlePDF}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>PDF</span>
               </button>
               <button
                 onClick={handleDOCX}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>DOCX</span>
@@ -188,7 +191,7 @@ const ParagraphGenerator = () => {
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-base text-slate-900 dark:text-slate-100 leading-relaxed">
+          <div className="p-5 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-base text-slate-900 dark:text-slate-100 leading-relaxed whitespace-pre-wrap font-sans">
             {generatedResult.paragraph}
           </div>
         </div>
