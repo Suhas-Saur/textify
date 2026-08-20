@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bold,
   Italic,
@@ -16,12 +16,22 @@ import {
   AlertCircle,
   Copy,
   Download,
-  ArrowRight
+  ArrowRight,
+  RefreshCw
 } from "lucide-react";
 import { exportToPDF } from "../utils/exportPDF";
 import { exportToDOCX } from "../utils/exportDOCX";
 import { checkGrammarAndSpelling } from "../utils/grammarEngine";
 import { improveTextWithAI } from "../utils/aiEngine";
+
+const AI_MODES = [
+  "Make Professional",
+  "Make Academic",
+  "Make Simple",
+  "Make Concise",
+  "Expand",
+  "Improve Vocabulary"
+];
 
 const WritingAssistant = ({
   text,
@@ -33,7 +43,10 @@ const WritingAssistant = ({
   onIgnoreError,
   setActiveTab
 }) => {
-  const [sideTab, setSideTab] = useState("issues"); // "issues", "autocorrect", "aiimprove"
+  const [sideTab, setSideTab] = useState("issues"); // "issues", "autocorrect", "aienhance"
+  const [aiMode, setAiMode] = useState("Make Professional");
+  const [enhancedText, setEnhancedText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [appliedAI, setAppliedAI] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -41,6 +54,29 @@ const WritingAssistant = ({
 
   // Auto-corrected sentence pre-computation
   const { correctedText } = checkGrammarAndSpelling(text);
+
+  // Auto-run AI Enhance when sideTab === "aienhance" or when mode/text changes
+  const runAiEnhance = async (mode = aiMode, currentText = text) => {
+    if (!currentText || !currentText.trim()) {
+      setEnhancedText("");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await improveTextWithAI(currentText, mode);
+      setEnhancedText(res.improvedText);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (sideTab === "aienhance") {
+      runAiEnhance(aiMode, text);
+    }
+  }, [sideTab, aiMode, text]);
 
   // Undo / Redo History Stack
   const [history, setHistory] = useState([text]);
@@ -100,6 +136,18 @@ const WritingAssistant = ({
     setTimeout(() => setAppliedAI(false), 2000);
   };
 
+  const handleApplyEnhanced = () => {
+    if (enhancedText) {
+      updateTextWithHistory(enhancedText);
+      setAppliedAI(true);
+      setTimeout(() => setAppliedAI(false), 2000);
+    }
+  };
+
+  const handleApplyAllErrors = () => {
+    updateTextWithHistory(correctedText);
+  };
+
   const handleExportPDF = async () => {
     setExportingPDF(true);
     try {
@@ -142,7 +190,7 @@ const WritingAssistant = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Editor Section (2 cols) */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[520px]">
             {/* Toolbar */}
             <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
@@ -232,7 +280,7 @@ const WritingAssistant = ({
                 value={text}
                 onChange={(e) => updateTextWithHistory(e.target.value)}
                 placeholder="Write or paste your text here..."
-                className="w-full flex-1 min-h-[350px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
+                className="w-full flex-1 min-h-[360px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
               />
             </div>
 
@@ -250,7 +298,7 @@ const WritingAssistant = ({
             </div>
           </div>
 
-          {/* Action Trigger Buttons */}
+          {/* Action Trigger Buttons (Stay Side-by-Side inside Workspace) */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
               onClick={() => setSideTab("issues")}
@@ -261,19 +309,19 @@ const WritingAssistant = ({
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Issues ({errors.length})</span>
+              <span>Errors ({errors.length})</span>
             </button>
 
             <button
-              onClick={() => setSideTab("autocorrect")}
+              onClick={() => setSideTab("aienhance")}
               className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
-                sideTab === "autocorrect"
-                  ? "bg-emerald-600 text-white"
+                sideTab === "aienhance"
+                  ? "bg-purple-600 text-white"
                   : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>AI Correct Box</span>
+              <span>AI Enhance</span>
             </button>
 
             <button
@@ -302,10 +350,10 @@ const WritingAssistant = ({
           </div>
         </div>
 
-        {/* Right Side-by-Side Analysis & AI Box */}
+        {/* Right Side-by-Side Analysis & AI Enhancement Panel */}
         <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-            {/* Header & Tabs */}
+            {/* Side-by-Side Header & Tabs */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-1">
                 <button
@@ -322,7 +370,15 @@ const WritingAssistant = ({
                     sideTab === "autocorrect" ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300" : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
-                  AI Corrected
+                  AI Correct
+                </button>
+                <button
+                  onClick={() => setSideTab("aienhance")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sideTab === "aienhance" ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  AI Enhance
                 </button>
               </div>
 
@@ -343,12 +399,22 @@ const WritingAssistant = ({
               </div>
             </div>
 
-            {/* TAB 1: DETECTED ISSUES LIST */}
+            {/* TAB 1: DETECTED ISSUES LIST WITH INDIVIDUAL & ALL FIX BUTTONS */}
             {sideTab === "issues" && (
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Detected Issues ({errors.length})
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Detected Issues ({errors.length})
+                  </h4>
+                  {errors.length > 0 && (
+                    <button
+                      onClick={handleApplyAllErrors}
+                      className="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
+                    >
+                      Fix All Errors
+                    </button>
+                  )}
+                </div>
 
                 {errors.length === 0 ? (
                   <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center space-y-1.5">
@@ -394,7 +460,7 @@ const WritingAssistant = ({
                           className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <Check className="w-3.5 h-3.5" />
-                          <span>Apply Fix</span>
+                          <span>Apply Correction</span>
                         </button>
                       </div>
                     ))}
@@ -403,7 +469,7 @@ const WritingAssistant = ({
               </div>
             )}
 
-            {/* TAB 2: SIDE-BY-SIDE AI AUTO-CORRECTED SENTENCE BOX */}
+            {/* TAB 2: SIDE-BY-SIDE AI AUTO-CORRECTED BOX */}
             {sideTab === "autocorrect" && (
               <div className="space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
@@ -411,7 +477,7 @@ const WritingAssistant = ({
                   <span>AI Corrected Output (Side-by-Side)</span>
                 </h4>
 
-                <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[160px] whitespace-pre-wrap">
+                <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[220px] whitespace-pre-wrap">
                   {correctedText || <span className="italic text-slate-400">Corrected text will appear here...</span>}
                 </div>
 
@@ -421,7 +487,56 @@ const WritingAssistant = ({
                   className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                  <span>{appliedAI ? "Applied AI Corrections!" : "Apply All AI Corrections"}</span>
+                  <span>{appliedAI ? "Applied All AI Corrections!" : "Replace with Corrected Text"}</span>
+                </button>
+              </div>
+            )}
+
+            {/* TAB 3: SIDE-BY-SIDE AI ENHANCE & STYLES BOX */}
+            {sideTab === "aienhance" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>AI Enhance Side-by-Side</span>
+                  </h4>
+                  {aiLoading && <RefreshCw className="w-3.5 h-3.5 text-purple-500 animate-spin" />}
+                </div>
+
+                {/* Mode Badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {AI_MODES.map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setAiMode(m)}
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        aiMode === m
+                          ? "bg-purple-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                      }`}
+                    >
+                      {m.replace("Make ", "")}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="p-4 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-sm text-slate-900 dark:text-slate-100 min-h-[180px] whitespace-pre-wrap leading-relaxed">
+                  {aiLoading ? (
+                    <div className="flex items-center justify-center h-36 text-purple-600">
+                      <RefreshCw className="w-6 h-6 animate-spin" />
+                    </div>
+                  ) : (
+                    enhancedText || <span className="italic text-slate-400">Select mode to generate enhanced text...</span>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleApplyEnhanced}
+                  disabled={!enhancedText || aiLoading}
+                  className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                  <span>{appliedAI ? "Applied AI Enhancement!" : "Apply AI Enhancement"}</span>
                 </button>
               </div>
             )}

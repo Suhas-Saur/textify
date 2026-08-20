@@ -17,7 +17,6 @@ const COMMON_MISSPELLINGS = {
   pls: "please",
   plz: "please",
   thx: "thanks",
-  thanks: "thanks",
   bcoz: "because",
   bcuz: "because",
   wud: "would",
@@ -59,24 +58,7 @@ const COMMON_MISSPELLINGS = {
   cant: "can't",
   im: "I'm",
   ive: "I've",
-  id: "I'd",
-  accomodate: "accommodate",
-  achive: "achieve",
-  apparantly: "apparently",
-  calender: "calendar",
-  embarass: "embarrass",
-  foreign: "foreign",
-  guarantee: "guarantee",
-  harass: "harass",
-  immediate: "immediate",
-  independent: "independent",
-  maintenance: "maintenance",
-  noticeable: "noticeable",
-  occasion: "occasion",
-  occurrence: "occurrence",
-  relevant: "relevant",
-  rhythm: "rhythm",
-  schedule: "schedule"
+  id: "I'd"
 };
 
 // Common POS lexicon rules
@@ -214,7 +196,8 @@ export const detectTone = (text = "") => {
 };
 
 /**
- * Checks text for spelling, grammar, punctuation, capitalization, etc.
+ * Advanced Grammar Engine detecting Subject-Verb Agreement, Plural/Singular mismatches,
+ * Tense, Pronoun capitalization, Parallel structure, and Misspellings.
  */
 export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   if (!text || !text.trim()) {
@@ -244,7 +227,6 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   try {
     const singleIMatches = Array.from(text.matchAll(/\b(i)\b/g));
     singleIMatches.forEach((match) => {
-      // Avoid duplicate if first word
       if (match.index !== 0 || !firstWordMatch) {
         errors.push({
           id: `err_i_${match.index}`,
@@ -260,7 +242,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
     console.error(e);
   }
 
-  // Rule 3: Misspellings & Shorthand Typos
+  // Rule 3: Common Misspellings & Shorthand Typos
   const tokens = text.split(/(\s+|[.,!?;:"()])/);
   let wordOffset = 0;
   tokens.forEach((token) => {
@@ -272,7 +254,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
         type: "Spelling Error",
         original: token,
         suggestion: token[0] === token[0].toUpperCase() ? correction.charAt(0).toUpperCase() + correction.slice(1) : correction,
-        explanation: `"${token}" is misspelled or informal shorthand. Recommended: "${correction}".`,
+        explanation: `"${token}" is misspelled or informal. Suggested correction is "${correction}".`,
         category: "spelling"
       });
     }
@@ -296,32 +278,70 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
     console.error(e);
   }
 
-  // Rule 5: Subject-Verb Agreement & Phrase Grammar Rules
+  // Rule 5: Advanced Subject-Verb Agreement Rules
   const subVerbPatterns = [
-    { regex: /\b(he|she|it)\s+(want)\b/gi, fix: "$1 wants", exp: "Use 'wants' for third-person singular subjects (he, she, it)." },
-    { regex: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use 'goes' for third-person singular subjects (he, she, it)." },
-    { regex: /\b(he|she|it)\s+(do)\b/gi, fix: "$1 does", exp: "Use 'does' for third-person singular subjects." },
-    { regex: /\b(he|she|it)\s+(have)\b/gi, fix: "$1 has", exp: "Use 'has' instead of 'have' with singular pronouns." },
-    { regex: /\b(they|we|you)\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with plural pronouns." },
-    { regex: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use 'am' with pronoun 'I'." },
+    // Plural pronoun / noun + "was" -> "were"
+    { regex: /\b(they|we|you)\s+(was)\b/gi, fix: "$1 were", exp: "Use plural past-tense verb 'were' with '$1'." },
+    { regex: /\b(they|we|you)\s+(does)\b/gi, fix: "$1 do", exp: "Use plural verb 'do' with '$1'." },
+    { regex: /\b(they|we|you)\s+(has)\b/gi, fix: "$1 have", exp: "Use plural verb 'have' with '$1'." },
+    { regex: /\b(they|we|you)\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with '$1'." },
+
+    // Singular pronoun + "were" / "are" -> "was" / "is"
+    { regex: /\b(he|she|it)\s+(were)\b/gi, fix: "$1 was", exp: "Use singular past-tense verb 'was' with '$1'." },
+    { regex: /\b(he|she|it)\s+(are)\b/gi, fix: "$1 is", exp: "Use singular verb 'is' with '$1'." },
+    { regex: /\b(he|she|it)\s+(want)\b/gi, fix: "$1 wants", exp: "Use third-person singular verb 'wants' with '$1'." },
+    { regex: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use third-person singular verb 'goes' with '$1'." },
+    { regex: /\b(he|she|it)\s+(do)\b/gi, fix: "$1 does", exp: "Use third-person singular verb 'does' with '$1'." },
+    { regex: /\b(he|she|it)\s+(have)\b/gi, fix: "$1 has", exp: "Use third-person singular verb 'has' with '$1'." },
+    { regex: /\b(i)\s+(were)\b/gi, fix: "I was", exp: "Use singular past-tense verb 'was' with pronoun 'I'." },
+    { regex: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use verb 'am' with pronoun 'I'." },
+    { regex: /\b(i)\s+(are)\b/gi, fix: "I am", exp: "Use verb 'am' with pronoun 'I'." },
+
+    // Plural Noun (e.g., "students", "teachers", "people") + "was" / "does" / "has" / singular verb ending in 's'
+    { regex: /\b([a-zA-Z]{3,}(?:s|ren|men|women|people))\s+(was)\b/gi, fix: "$1 were", exp: "Use plural verb 'were' with plural noun '$1'." },
+    { regex: /\b([a-zA-Z]{3,}(?:s|ren|men|women|people))\s+(does)\b/gi, fix: "$1 do", exp: "Use plural verb 'do' with plural noun '$1'." },
+    { regex: /\b([a-zA-Z]{3,}(?:s|ren|men|women|people))\s+(has)\b/gi, fix: "$1 have", exp: "Use plural verb 'have' with plural noun '$1'." },
+    { regex: /\b([a-zA-Z]{3,}(?:s|ren|men|women|people))\s+(is)\b/gi, fix: "$1 are", exp: "Use plural verb 'are' with plural noun '$1'." },
+    
+    // Plural noun + adverb + singular verb (e.g. "students still finds")
+    { regex: /\b(students|teachers|children|people|users)\s+(still\s+)?(finds|wants|knows|thinks|explains)\b/gi, fix: (m, p1, p2, v) => `${p1} ${p2 || ""}${v.slice(0, -1)}`, exp: "Use base verb form without 's' for plural subjects." },
+
+    // Quantifiers + "does" / "was" -> "do" / "were"
+    { regex: /\b(many|several|few|both)\s+of\s+them\s+(does)\b/gi, fix: "$1 of them do", exp: "Use plural verb 'do' with '$1 of them'." },
+    { regex: /\b(many|several|few|both)\s+of\s+them\s+(was)\b/gi, fix: "$1 of them were", exp: "Use plural verb 'were' with '$1 of them'." },
+    { regex: /\b(many|several|few|both)\s+of\s+them\s+(has)\b/gi, fix: "$1 of them have", exp: "Use plural verb 'have' with '$1 of them'." },
+
+    // Articles & Phrases
     { regex: /\b(a)\s+([aeiou][a-z]+)\b/gi, fix: "an $2", exp: "Use article 'an' before words starting with a vowel sound." },
     { regex: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." },
-    { regex: /\b(college|school|work)\s+(everyday)\b/gi, fix: "$1 every day", exp: "Use 'every day' (two words) as an adverbial phrase." }
+    { regex: /\b(college|school|work)\s+(everyday)\b/gi, fix: "$1 every day", exp: "Use 'every day' (two words) as an adverbial phrase." },
+
+    // Parallel Structure (e.g., "practice more questions and revising" -> "and revise")
+    { regex: /\b(practice\s+[^,]+and)\s+(revising)\b/gi, fix: "$1 revise", exp: "Maintain parallel verb form ('practice... and revise')." }
   ];
 
   subVerbPatterns.forEach(({ regex, fix, exp }, i) => {
     try {
       const matches = Array.from(text.matchAll(new RegExp(regex.source, "gi")));
       matches.forEach((pMatch) => {
-        const replacement = pMatch[0].replace(new RegExp(regex.source, "i"), fix);
-        errors.push({
-          id: `err_sv_${i}_${pMatch.index}`,
-          type: "Grammar Error",
-          original: pMatch[0],
-          suggestion: replacement,
-          explanation: exp,
-          category: "grammar"
-        });
+        let replacement;
+        if (typeof fix === "function") {
+          replacement = fix(...pMatch);
+        } else {
+          replacement = pMatch[0].replace(new RegExp(regex.source, "i"), fix);
+        }
+
+        // Avoid duplicate errors
+        if (!errors.some((e) => e.original === pMatch[0])) {
+          errors.push({
+            id: `err_sv_${i}_${pMatch.index}`,
+            type: "Grammar Error",
+            original: pMatch[0],
+            suggestion: replacement,
+            explanation: exp,
+            category: "grammar"
+          });
+        }
       });
     } catch (e) {
       console.error(e);
@@ -330,7 +350,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
 
   // Calculate Quality Score
   const totalWords = text.trim().split(/\s+/).length;
-  const errorPenalty = errors.length * 15;
+  const errorPenalty = errors.length * 12;
   const score = Math.max(10, Math.min(100, 100 - Math.round((errorPenalty / (totalWords || 1)) * 100)));
 
   // Generate Auto-Corrected Text
