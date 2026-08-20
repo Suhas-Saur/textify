@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Bold,
   Italic,
@@ -72,20 +72,16 @@ const WritingAssistant = ({
     }
   };
 
-  useEffect(() => {
-    if (sideTab === "aienhance") {
-      runAiEnhance(aiMode, text);
-    }
-  }, [sideTab, aiMode, text]);
-
   // Undo / Redo History Stack
   const [history, setHistory] = useState([text]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
   const updateTextWithHistory = (newVal) => {
-    setText(newVal);
+    // Automatically sanitize raw broken HTML tags if injected previously
+    const cleanVal = newVal.replace(/<[^>]*>/g, "");
+    setText(cleanVal);
     const newHist = history.slice(0, historyIndex + 1);
-    newHist.push(newVal);
+    newHist.push(cleanVal);
     setHistory(newHist);
     setHistoryIndex(newHist.length - 1);
   };
@@ -209,9 +205,9 @@ const WritingAssistant = ({
                   <Italic className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleFormatText("<u>", "</u>")}
+                  onClick={() => handleFormatText("__")}
                   className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline cursor-pointer"
-                  title="Underline (<u>text</u>)"
+                  title="Underline (__text__)"
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -313,7 +309,10 @@ const WritingAssistant = ({
             </button>
 
             <button
-              onClick={() => setSideTab("aienhance")}
+              onClick={() => {
+                setSideTab("aienhance");
+                runAiEnhance(aiMode, text);
+              }}
               className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
                 sideTab === "aienhance"
                   ? "bg-purple-600 text-white"
@@ -373,7 +372,10 @@ const WritingAssistant = ({
                   AI Correct
                 </button>
                 <button
-                  onClick={() => setSideTab("aienhance")}
+                  onClick={() => {
+                    setSideTab("aienhance");
+                    runAiEnhance(aiMode, text);
+                  }}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     sideTab === "aienhance" ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300" : "text-slate-400 hover:text-slate-600"
                   }`}
@@ -460,7 +462,7 @@ const WritingAssistant = ({
                           className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <Check className="w-3.5 h-3.5" />
-                          <span>Apply Correction</span>
+                          <span>Apply Fix</span>
                         </button>
                       </div>
                     ))}
@@ -508,7 +510,10 @@ const WritingAssistant = ({
                   {AI_MODES.map((m) => (
                     <button
                       key={m}
-                      onClick={() => setAiMode(m)}
+                      onClick={() => {
+                        setAiMode(m);
+                        runAiEnhance(m, text);
+                      }}
                       className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                         aiMode === m
                           ? "bg-purple-600 text-white shadow-xs"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Languages, ArrowRightLeft, Copy, Download, Check, RefreshCw } from "lucide-react";
+import { Languages, ArrowRightLeft, Copy, Download, Check, RefreshCw, Loader2 } from "lucide-react";
 import { translateTextWithAI } from "../utils/aiEngine";
 import { exportToPDF } from "../utils/exportPDF";
 import { exportToDOCX } from "../utils/exportDOCX";
@@ -102,7 +102,7 @@ const Translator = ({ text }) => {
           disabled={loading || !inputText.trim()}
           className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2 cursor-pointer"
         >
-          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
           <span>{loading ? "Translating..." : "Re-Translate"}</span>
         </button>
       </div>
@@ -163,20 +163,22 @@ const Translator = ({ text }) => {
           />
         </div>
 
-        {/* Target Box */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
+        {/* Target Box with Spinner Loading Overlay */}
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between relative">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                 <Languages className="w-3.5 h-3.5" />
                 <span>Translation ({targetLang})</span>
               </h3>
-              {loading && <RefreshCw className="w-3.5 h-3.5 text-blue-500 animate-spin" />}
+              {loading && <span className="text-xs font-semibold text-blue-500 animate-pulse flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Translating...</span>}
             </div>
-            <div className="min-h-[250px] p-4 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-slate-900 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-wrap">
+
+            <div className="min-h-[250px] p-4 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-slate-900 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-wrap flex flex-col justify-between">
               {loading ? (
-                <div className="flex items-center justify-center h-48 text-blue-600">
-                  <RefreshCw className="w-6 h-6 animate-spin" />
+                <div className="flex flex-col items-center justify-center h-48 space-y-3 text-blue-600 dark:text-blue-400">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="text-xs font-bold">Translating into {targetLang}...</p>
                 </div>
               ) : (
                 translatedText || <span className="italic text-slate-400">Type text or select target language...</span>
