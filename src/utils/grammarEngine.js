@@ -3,9 +3,31 @@
  * Built for Textify Platform by Suhas S
  */
 
-// Expanded English dictionary & common misspellings lookup
+// Comprehensive English dictionary & common shorthand/typo dictionary
 const COMMON_MISSPELLINGS = {
-  // Food & common words
+  // Shorthand & informal typos
+  vry: "very",
+  mrning: "morning",
+  evng: "evening",
+  aftrnun: "afternoon",
+  gud: "good",
+  u: "you",
+  ur: "your",
+  r: "are",
+  pls: "please",
+  plz: "please",
+  thx: "thanks",
+  thanks: "thanks",
+  bcoz: "because",
+  bcuz: "because",
+  wud: "would",
+  shud: "should",
+  cud: "could",
+  clg: "college",
+  univ: "university",
+  abt: "about",
+  txt: "text",
+  msg: "message",
   eting: "eating",
   icream: "ice cream",
   icecream: "ice cream",
@@ -192,7 +214,7 @@ export const detectTone = (text = "") => {
 };
 
 /**
- * Checks text for spelling, grammar, punctuation, subject-verb agreement, pronouns, etc.
+ * Checks text for spelling, grammar, punctuation, capitalization, etc.
  */
 export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   if (!text || !text.trim()) {
@@ -202,24 +224,43 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   const errors = [];
   const customDictSet = new Set(customDictionary.map((w) => w.toLowerCase()));
 
-  // Rule 1: Lowercase single pronoun 'i' (e.g. "i am", "i go")
+  // Rule 1: First word sentence capitalization (e.g. "it is..." -> "It")
+  const trimmed = text.trim();
+  const firstWordMatch = trimmed.match(/^([a-z][a-z]*)/);
+  if (firstWordMatch && firstWordMatch[1]) {
+    const firstWord = firstWordMatch[1];
+    const capitalized = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
+    errors.push({
+      id: `err_cap_0`,
+      type: "Capitalization Error",
+      original: firstWord,
+      suggestion: capitalized,
+      explanation: `Sentences should begin with a capital letter ("${capitalized}").`,
+      category: "grammar"
+    });
+  }
+
+  // Rule 2: Lowercase single pronoun 'i' (e.g. "i am", "i go")
   try {
     const singleIMatches = Array.from(text.matchAll(/\b(i)\b/g));
     singleIMatches.forEach((match) => {
-      errors.push({
-        id: `err_i_${match.index}`,
-        type: "Capitalization Error",
-        original: match[0],
-        suggestion: "I",
-        explanation: "The pronoun 'I' should always be capitalized.",
-        category: "grammar"
-      });
+      // Avoid duplicate if first word
+      if (match.index !== 0 || !firstWordMatch) {
+        errors.push({
+          id: `err_i_${match.index}`,
+          type: "Capitalization Error",
+          original: match[0],
+          suggestion: "I",
+          explanation: "The pronoun 'I' should always be capitalized.",
+          category: "grammar"
+        });
+      }
     });
   } catch (e) {
     console.error(e);
   }
 
-  // Rule 2: Misspellings (Tokenized)
+  // Rule 3: Misspellings & Shorthand Typos
   const tokens = text.split(/(\s+|[.,!?;:"()])/);
   let wordOffset = 0;
   tokens.forEach((token) => {
@@ -231,14 +272,14 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
         type: "Spelling Error",
         original: token,
         suggestion: token[0] === token[0].toUpperCase() ? correction.charAt(0).toUpperCase() + correction.slice(1) : correction,
-        explanation: `"${token}" is misspelled. Suggested correction is "${correction}".`,
+        explanation: `"${token}" is misspelled or informal shorthand. Recommended: "${correction}".`,
         category: "spelling"
       });
     }
     wordOffset += token.length;
   });
 
-  // Rule 3: Repeated Words (e.g. "the the", "in in")
+  // Rule 4: Repeated Words (e.g. "the the", "in in")
   try {
     const repMatches = Array.from(text.matchAll(/\b([a-zA-Z]+)\s+\1\b/gi));
     repMatches.forEach((match) => {
@@ -255,7 +296,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
     console.error(e);
   }
 
-  // Rule 4: Subject-Verb Agreement & Phrase Grammar Rules
+  // Rule 5: Subject-Verb Agreement & Phrase Grammar Rules
   const subVerbPatterns = [
     { regex: /\b(he|she|it)\s+(want)\b/gi, fix: "$1 wants", exp: "Use 'wants' for third-person singular subjects (he, she, it)." },
     { regex: /\b(he|she|it)\s+(go)\b/gi, fix: "$1 goes", exp: "Use 'goes' for third-person singular subjects (he, she, it)." },
@@ -265,7 +306,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
     { regex: /\b(i)\s+(is)\b/gi, fix: "I am", exp: "Use 'am' with pronoun 'I'." },
     { regex: /\b(a)\s+([aeiou][a-z]+)\b/gi, fix: "an $2", exp: "Use article 'an' before words starting with a vowel sound." },
     { regex: /\b(an)\s+([bcdfghjklmnpqrstvwxyz][a-z]+)\b/gi, fix: "a $2", exp: "Use article 'a' before words starting with a consonant sound." },
-    { regex: /\b(college|school|work)\s+(everyday)\b/gi, fix: "$1 every day", exp: "Use 'every day' (two words) as an adverbial phrase meaning each day." }
+    { regex: /\b(college|school|work)\s+(everyday)\b/gi, fix: "$1 every day", exp: "Use 'every day' (two words) as an adverbial phrase." }
   ];
 
   subVerbPatterns.forEach(({ regex, fix, exp }, i) => {
@@ -289,7 +330,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
 
   // Calculate Quality Score
   const totalWords = text.trim().split(/\s+/).length;
-  const errorPenalty = errors.length * 8;
+  const errorPenalty = errors.length * 15;
   const score = Math.max(10, Math.min(100, 100 - Math.round((errorPenalty / (totalWords || 1)) * 100)));
 
   // Generate Auto-Corrected Text
@@ -297,6 +338,11 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
   errors.forEach((err) => {
     correctedText = correctedText.replace(err.original, err.suggestion);
   });
+
+  // Ensure sentence ending punctuation if missing
+  if (correctedText && !correctedText.endsWith(".") && !correctedText.endsWith("!") && !correctedText.endsWith("?")) {
+    correctedText += ".";
+  }
 
   return { errors, score, correctedText };
 };
@@ -306,7 +352,7 @@ export const checkGrammarAndSpelling = (text = "", customDictionary = []) => {
  */
 export const analyzePartsOfSpeech = (text = "") => {
   if (!text || !text.trim()) {
-    return { tokens: [], stats: {}, categoryCounts: {} };
+    return { tokens: [], categoryCounts: {} };
   }
 
   const tokens = [];

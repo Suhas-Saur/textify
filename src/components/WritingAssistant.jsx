@@ -15,10 +15,13 @@ import {
   X,
   AlertCircle,
   Copy,
-  Download
+  Download,
+  ArrowRight
 } from "lucide-react";
 import { exportToPDF } from "../utils/exportPDF";
 import { exportToDOCX } from "../utils/exportDOCX";
+import { checkGrammarAndSpelling } from "../utils/grammarEngine";
+import { improveTextWithAI } from "../utils/aiEngine";
 
 const WritingAssistant = ({
   text,
@@ -26,14 +29,18 @@ const WritingAssistant = ({
   stats,
   errors,
   score,
-  onCheckText,
   onApplyCorrection,
   onIgnoreError,
   setActiveTab
 }) => {
+  const [sideTab, setSideTab] = useState("issues"); // "issues", "autocorrect", "aiimprove"
   const [copied, setCopied] = useState(false);
+  const [appliedAI, setAppliedAI] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingDOCX, setExportingDOCX] = useState(false);
+
+  // Auto-corrected sentence pre-computation
+  const { correctedText } = checkGrammarAndSpelling(text);
 
   // Undo / Redo History Stack
   const [history, setHistory] = useState([text]);
@@ -87,6 +94,12 @@ const WritingAssistant = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleApplyAICorrected = () => {
+    updateTextWithHistory(correctedText);
+    setAppliedAI(true);
+    setTimeout(() => setAppliedAI(false), 2000);
+  };
+
   const handleExportPDF = async () => {
     setExportingPDF(true);
     try {
@@ -135,21 +148,21 @@ const WritingAssistant = ({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleFormatText("**")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold cursor-pointer"
                   title="Bold (**text**)"
                 >
                   <Bold className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleFormatText("*")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 italic"
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 italic cursor-pointer"
                   title="Italic (*text*)"
                 >
                   <Italic className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleFormatText("<u>", "</u>")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline"
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline cursor-pointer"
                   title="Underline (<u>text</u>)"
                 >
                   <Underline className="w-4 h-4" />
@@ -160,7 +173,7 @@ const WritingAssistant = ({
                 <button
                   onClick={handleUndo}
                   disabled={historyIndex <= 0}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30"
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
                   title="Undo"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -168,7 +181,7 @@ const WritingAssistant = ({
                 <button
                   onClick={handleRedo}
                   disabled={historyIndex >= history.length - 1}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30"
+                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
                   title="Redo"
                 >
                   <RotateCw className="w-4 h-4" />
@@ -178,7 +191,7 @@ const WritingAssistant = ({
 
                 <button
                   onClick={() => updateTextWithHistory("")}
-                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40"
+                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40 cursor-pointer"
                   title="Clear Text"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -188,7 +201,7 @@ const WritingAssistant = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 flex items-center gap-1.5"
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-teal-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? "Copied" : "Copy"}</span>
@@ -196,7 +209,7 @@ const WritingAssistant = ({
                 <button
                   onClick={handleExportPDF}
                   disabled={exportingPDF}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm"
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>{exportingPDF ? "PDF..." : "PDF"}</span>
@@ -204,7 +217,7 @@ const WritingAssistant = ({
                 <button
                   onClick={handleExportDOCX}
                   disabled={exportingDOCX}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm"
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>{exportingDOCX ? "DOCX..." : "DOCX"}</span>
@@ -240,19 +253,27 @@ const WritingAssistant = ({
           {/* Action Trigger Buttons */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
-              onClick={onCheckText}
-              className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              onClick={() => setSideTab("issues")}
+              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                sideTab === "issues"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+              }`}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Check Text</span>
+              <span>Issues ({errors.length})</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("ai-improve")}
-              className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              onClick={() => setSideTab("autocorrect")}
+              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                sideTab === "autocorrect"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+              }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>AI Improve</span>
+              <span>AI Correct Box</span>
             </button>
 
             <button
@@ -281,87 +302,129 @@ const WritingAssistant = ({
           </div>
         </div>
 
-        {/* Right Analysis Panel */}
+        {/* Right Side-by-Side Analysis & AI Box */}
         <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+            {/* Header & Tabs */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                Real-Time Analysis
-              </h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold text-xs">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setSideTab("issues")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sideTab === "issues" ? "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Errors ({errors.length})
+                </button>
+                <button
+                  onClick={() => setSideTab("autocorrect")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sideTab === "autocorrect" ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  AI Corrected
+                </button>
+              </div>
+
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${score >= 80 ? "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300" : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"}`}>
                 Score: {score}
               </span>
             </div>
 
-            {/* Quick Metrics */}
+            {/* Metrics Bar */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <p className="text-slate-500 dark:text-slate-400">Readability</p>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px]">Readability</p>
                 <p className="font-bold text-slate-900 dark:text-white mt-0.5">{stats.readability}</p>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <p className="text-slate-500 dark:text-slate-400">Tone</p>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px]">Tone</p>
                 <p className="font-bold text-slate-900 dark:text-white mt-0.5">{stats.tone}</p>
               </div>
             </div>
 
-            {/* Issue Suggestions List */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Detected Issues ({errors.length})
-              </h4>
+            {/* TAB 1: DETECTED ISSUES LIST */}
+            {sideTab === "issues" && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Detected Issues ({errors.length})
+                </h4>
 
-              {errors.length === 0 ? (
-                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center space-y-1">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 mx-auto" />
-                  <p className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Great Job!</p>
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400">No spelling or grammar errors detected.</p>
-                </div>
-              ) : (
-                <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
-                  {errors.map((err) => (
-                    <div
-                      key={err.id}
-                      className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {err.type}
-                        </span>
+                {errors.length === 0 ? (
+                  <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center space-y-1.5">
+                    <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                    <p className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Perfect Writing!</p>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400">No spelling or grammar errors detected.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    {errors.map((err) => (
+                      <div
+                        key={err.id}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {err.type}
+                          </span>
+                          <button
+                            onClick={() => onIgnoreError(err.id)}
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                            title="Ignore"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p className="text-slate-600 dark:text-slate-300">
+                            Incorrect: <span className="line-through text-rose-500 font-mono font-bold">{err.original}</span>
+                          </p>
+                          <p className="text-teal-700 dark:text-teal-300 font-bold">
+                            Suggestion: <span className="underline font-mono">{err.suggestion}</span>
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                            {err.explanation}
+                          </p>
+                        </div>
+
                         <button
-                          onClick={() => onIgnoreError(err.id)}
-                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                          title="Ignore"
+                          onClick={() => onApplyCorrection(err)}
+                          className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Apply Fix</span>
                         </button>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-                      <div className="space-y-1">
-                        <p className="text-slate-600 dark:text-slate-300">
-                          Original: <span className="line-through text-rose-500 font-mono">{err.original}</span>
-                        </p>
-                        <p className="text-teal-700 dark:text-teal-300 font-bold">
-                          Suggestion: <span className="underline font-mono">{err.suggestion}</span>
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                          {err.explanation}
-                        </p>
-                      </div>
+            {/* TAB 2: SIDE-BY-SIDE AI AUTO-CORRECTED SENTENCE BOX */}
+            {sideTab === "autocorrect" && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI Corrected Output (Side-by-Side)</span>
+                </h4>
 
-                      <button
-                        onClick={() => onApplyCorrection(err)}
-                        className="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Apply Correction</span>
-                      </button>
-                    </div>
-                  ))}
+                <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[160px] whitespace-pre-wrap">
+                  {correctedText || <span className="italic text-slate-400">Corrected text will appear here...</span>}
                 </div>
-              )}
-            </div>
+
+                <button
+                  onClick={handleApplyAICorrected}
+                  disabled={!text.trim() || text === correctedText}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                  <span>{appliedAI ? "Applied AI Corrections!" : "Apply All AI Corrections"}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
