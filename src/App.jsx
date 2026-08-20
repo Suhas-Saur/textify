@@ -101,8 +101,8 @@ const App = () => {
         setIsMobileOpen={setIsMobileOpen}
       />
 
-      {/* Main Content Area */}
-      <div className="lg:pl-64 flex-1 flex flex-col min-h-screen">
+      {/* Main Content Area (Compact sidebar padding lg:pl-56) */}
+      <div className="lg:pl-56 flex-1 flex flex-col min-h-screen">
         <Navbar
           activeTab={activeTab}
           setIsMobileOpen={setIsMobileOpen}
