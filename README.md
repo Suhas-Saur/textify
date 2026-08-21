@@ -3,7 +3,7 @@
 # 🪶 Textify
 ### **Next-Gen AI English Writing, Grammar & Learning Platform**
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-sagarsspellchecker.netlify.app-00C7B7?style=for-the-badge&logo=netlify)](https://sagarsspellchecker.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-http%3A%2F%2Flocalhost%3A5189%2F-00C7B7?style=for-the-badge&logo=vite)](http://localhost:5189/)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Suhas--Saur%2Ftextify-181717?style=for-the-badge&logo=github)](https://github.com/Suhas-Saur/textify)
 [![LinkedIn Profile](https://img.shields.io/badge/LinkedIn-Suhas%20S-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/suhas-s-081b84335)
 
@@ -20,15 +20,15 @@
 
 ## 🌐 Live Web Application
 
-Access the live production deployment of Textify here:
+Access the live demo deployment of Textify here:
 
-👉 **[https://sagarsspellchecker.netlify.app/](https://sagarsspellchecker.netlify.app/)**
+👉 **[http://localhost:5189/](http://localhost:5189/)**
 
 ---
 
 ## 🌟 Platform Overview
 
-**Textify** is an intelligent, full-featured AI writing, grammar checking, sentence error analysis, text rewriting, translation, and document generation platform. Designed for students, professionals, researchers, and English learners, Textify offers real-time linguistic feedback, side-by-side auto-corrections, and automated long-form document creation in a clean, default dark-mode interface.
+**Textify** is an intelligent, full-featured AI writing, grammar checking, sentence error analysis, text rewriting, translation, and long-document generation platform. Designed for students, professionals, researchers, and English learners, Textify offers real-time linguistic feedback, side-by-side auto-corrections, and automated long-form document creation in a clean, default dark-mode interface.
 
 Developed and maintained by **[Suhas S](https://www.linkedin.com/in/suhas-s-081b84335)**.
 
@@ -140,7 +140,7 @@ npm install --ignore-scripts
 npm run dev
 ```
 
-Open `http://localhost:5173` (or the terminal-assigned port) in your browser.
+Open `http://localhost:5189` in your browser.
 
 ---
 
@@ -162,7 +162,7 @@ Designed, built, and maintained by **Suhas S**.
 
 - 🔗 **LinkedIn**: [Suhas S Profile](https://www.linkedin.com/in/suhas-s-081b84335)
 - 🐙 **GitHub**: [@Suhas-Saur](https://github.com/Suhas-Saur)
-- 🌐 **Live Application**: [sagarsspellchecker.netlify.app](https://sagarsspellchecker.netlify.app/)
+- 🌐 **Live Demo**: [http://localhost:5189/](http://localhost:5189/)
 - 📁 **Repository**: [github.com/Suhas-Saur/textify](https://github.com/Suhas-Saur/textify)
 
 ---
