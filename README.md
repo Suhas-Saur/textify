@@ -3,7 +3,7 @@
 # 🪶 Textify
 ### **Next-Gen AI English Writing, Grammar & Learning Platform**
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-http%3A%2F%2Flocalhost%3A5189%2F-00C7B7?style=for-the-badge&logo=vite)](http://localhost:5189/)
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-http%3A%2F%2Flocalhost%3A5173%2F-00C7B7?style=for-the-badge&logo=vite)](http://localhost:5173/)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Suhas--Saur%2Ftextify-181717?style=for-the-badge&logo=github)](https://github.com/Suhas-Saur/textify)
 [![LinkedIn Profile](https://img.shields.io/badge/LinkedIn-Suhas%20S-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/suhas-s-081b84335)
 
@@ -22,7 +22,7 @@
 
 Access the live demo deployment of Textify here:
 
-👉 **[http://localhost:5189/](http://localhost:5189/)**
+👉 **[http://localhost:5173/](http://localhost:5173/)**
 
 ---
 
@@ -140,7 +140,7 @@ npm install --ignore-scripts
 npm run dev
 ```
 
-Open `http://localhost:5189` in your browser.
+Open `http://localhost:5173` in your browser.
 
 ---
 
@@ -162,7 +162,7 @@ Designed, built, and maintained by **Suhas S**.
 
 - 🔗 **LinkedIn**: [Suhas S Profile](https://www.linkedin.com/in/suhas-s-081b84335)
 - 🐙 **GitHub**: [@Suhas-Saur](https://github.com/Suhas-Saur)
-- 🌐 **Live Demo**: [http://localhost:5189/](http://localhost:5189/)
+- 🌐 **Live Demo**: [http://localhost:5173/](http://localhost:5173/)
 - 📁 **Repository**: [github.com/Suhas-Saur/textify](https://github.com/Suhas-Saur/textify)
 
 ---
