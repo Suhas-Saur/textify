@@ -3,8 +3,8 @@
 # 🪶 Textify
 ### **Next-Gen AI English Writing, Grammar & Learning Platform**
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-sagarsspellchecker.netlify.app-00C7B7?style=for-the-badge&logo=netlify)](https://sagarsspellchecker.netlify.app/)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Suhas--Saur.github.io%2Ftextify-181717?style=for-the-badge&logo=github)](https://Suhas-Saur.github.io/textify/)
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-Suhas--Saur.github.io%2Ftextify-00C7B7?style=for-the-badge&logo=github)](https://Suhas-Saur.github.io/textify/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Suhas--Saur%2Ftextify-181717?style=for-the-badge&logo=github)](https://github.com/Suhas-Saur/textify)
 [![LinkedIn Profile](https://img.shields.io/badge/LinkedIn-Suhas%20S-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/suhas-s-081b84335)
 
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
@@ -20,10 +20,9 @@
 
 ## 🚀 Live Demo
 
-[Open Live Demo](https://sagarsspellchecker.netlify.app/)
+[Open Live Demo](https://Suhas-Saur.github.io/textify/)
 
-- **Primary Production URL**: [https://sagarsspellchecker.netlify.app/](https://sagarsspellchecker.netlify.app/)
-- **GitHub Pages Mirror**: [https://Suhas-Saur.github.io/textify/](https://Suhas-Saur.github.io/textify/)
+- **Live Web Application**: [https://Suhas-Saur.github.io/textify/](https://Suhas-Saur.github.io/textify/)
 
 ---
 
@@ -31,9 +30,8 @@
 
 This project is deployed independently from the development environment and requires no local server or Antigravity instance to run.
 
-- **Production URL**: [https://sagarsspellchecker.netlify.app/](https://sagarsspellchecker.netlify.app/)
-- **GitHub Pages Deployment**: [https://Suhas-Saur.github.io/textify/](https://Suhas-Saur.github.io/textify/)
-- **Hosting Platform**: Netlify / GitHub Pages
+- **Production URL**: [https://Suhas-Saur.github.io/textify/](https://Suhas-Saur.github.io/textify/)
+- **Hosting Platform**: GitHub Pages
 - **Repository**: [https://github.com/Suhas-Saur/textify](https://github.com/Suhas-Saur/textify)
 
 ---
@@ -174,7 +172,7 @@ Designed, built, and maintained by **Suhas S**.
 
 - 🔗 **LinkedIn**: [Suhas S Profile](https://www.linkedin.com/in/suhas-s-081b84335)
 - 🐙 **GitHub**: [@Suhas-Saur](https://github.com/Suhas-Saur)
-- 🌐 **Live Production Site**: [https://sagarsspellchecker.netlify.app/](https://sagarsspellchecker.netlify.app/)
+- 🌐 **Live Web Application**: [https://Suhas-Saur.github.io/textify/](https://Suhas-Saur.github.io/textify/)
 - 📁 **Repository**: [github.com/Suhas-Saur/textify](https://github.com/Suhas-Saur/textify)
 
 ---
