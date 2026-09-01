@@ -53,6 +53,7 @@ Developed and maintained by **[Suhas S](https://www.linkedin.com/in/suhas-s-081b
 | **10 Instant AI Rewrite Modes** | ✅ Built-in | 💰 Premium Only | 💰 Premium Only | ❌ No |
 | **Multilingual AI Translation (16 Languages)** | ✅ Built-in | ❌ No | ❌ No | 💰 Premium Only |
 | **Long Document Generator (2,000+ Words)** | ✅ Built-in | ❌ No | ❌ No | ❌ No |
+| **Mobile Touch Mode (Large Font & Tap Targets)** | ✅ Built-in Toggle | ❌ Basic | ❌ Basic | ❌ Basic |
 | **Client-Side PDF & DOCX Export** | ✅ Free | 💰 Paid Tier | 💰 Paid Tier | 💰 Paid Tier |
 | **Parts of Speech & Error Sentence Highlighting** | ✅ Dual View | ❌ No | ❌ No | ❌ No |
 | **Custom Dictionary Persistence** | ✅ LocalStorage | 💰 Premium Only | 💰 Premium Only | 💰 Premium Only |
@@ -66,30 +67,35 @@ Developed and maintained by **[Suhas S](https://www.linkedin.com/in/suhas-s-081b
 - **Clean Markdown Formatting**: Support for Bold (`**bold**`), Italic (`*italic*`), Underline (`__underline__`), Undo, Redo, and Clear actions without raw HTML tag leaks.
 - **One-Click Corrections**: Apply individual suggestions or click **"Fix All Errors"** to resolve all spelling, grammar, and subject-verb mismatches in one click.
 
-### 2. 🔍 Advanced Grammar & Sentence Engine
+### 2. 📱 Mobile Touch-Optimized Mode
+- **Explicit View Switcher**: Toggle between `📱 Mobile Mode` and `🖥️ Desktop Mode` anytime from the top header or sidebar footer.
+- **High-Readability Typography**: Expands text editor fonts to `18px - 20px` (`text-lg` / `text-xl`) for clear readability on mobile screens.
+- **Enlarged Touch Targets**: Provides 48px+ tap targets on buttons (`Apply Fix`, `Errors`, `AI Enhance`, `PDF`, `DOCX`) for effortless finger clicking.
+
+### 3. 🔍 Advanced Grammar & Sentence Engine
 - **Complex Subject-Verb Agreement Parser**: Detects plural/singular noun mismatches (e.g. `students was` → `students were`, `they does` → `they do`, `he were` → `he was`).
 - **Shorthand & Typo Expansion**: Catches informal typos (`vry` → `very`, `mrning` → `morning`, `gud` → `good`) and sentence-start capitalization issues.
 
-### 3. 🏷️ Parts of Speech & Sentence Error Analyzer
+### 4. 🏷️ Parts of Speech & Sentence Error Analyzer
 - **Dual Linguistic Breakdown**: Classifies words into 9 grammatical classes (Noun, Verb, Adjective, Adverb, Pronoun, Preposition, Conjunction, Interjection, Determiner).
 - **Errored Part Highlighting**: Highlights faulty parts of sentences with rose error badges (`[ERR: suggestion]`) and offers an **"Errored Parts Only"** filter toggle.
 
-### 4. ✨ AI Rewriter & Tone Transformer
+### 5. ✨ AI Rewriter & Tone Transformer
 - **10 Rewrite Modes**: `Fix Grammar`, `Make Professional`, `Make Academic`, `Make Simple`, `Make Concise`, `Expand`, `Improve Vocabulary`, `Improve Clarity`, `Make Formal`, `Make Casual`.
 - **Instant Auto-Transform**: Selecting any transformation mode instantly generates the rewritten version without unnecessary button clicks.
 
-### 5. 📝 AI Document & Essay Generator (Up to 2,000+ Words)
+### 6. 📝 AI Document & Essay Generator (Up to 2,000+ Words)
 - **Flexible Length Options**: `Short (~100w)`, `Medium (~250w)`, `Long (~500w)`, `Extended Essay (~1,000w)`, and `Comprehensive Guide (~2,000+ words)`.
 - **Structured Sections**: Generates comprehensive documents complete with Executive Summaries, Empirical Case Studies, and Conclusions.
 
-### 6. 🌐 Multilingual AI Translator
+### 7. 🌐 Multilingual AI Translator
 - **16 Languages Supported**: English, Hindi, Kannada, Tamil, Telugu, Malayalam, Marathi, Bengali, French, German, Spanish, Portuguese, Arabic, Chinese, Japanese, Korean.
 - **Instant Script Translation**: Real-time side-by-side translation with animated loading overlays.
 
-### 7. 📊 Writing Quality Report
+### 8. 📊 Writing Quality Report
 - **Quality Score (0 - 100)**: Calculates Flesch-Kincaid readability ratings, reading time, tone detection, error distribution, and actionable writing recommendations.
 
-### 8. 📄 Working PDF & DOCX Document Exports
+### 9. 📄 Working PDF & DOCX Document Exports
 - **Formatted PDF Export (`jspdf`)**: Generates structured, multi-page PDFs complete with headers, footers, metadata, and page numbers.
 - **Valid DOCX Export (`docx`)**: Creates valid Microsoft Word `.docx` documents preserving headings, paragraphs, and lists.
 
