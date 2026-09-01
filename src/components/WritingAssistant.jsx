@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Bold,
   Italic,
@@ -17,7 +17,8 @@ import {
   Copy,
   Download,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Smartphone
 } from "lucide-react";
 import { exportToPDF } from "../utils/exportPDF";
 import { exportToDOCX } from "../utils/exportDOCX";
@@ -41,7 +42,8 @@ const WritingAssistant = ({
   score,
   onApplyCorrection,
   onIgnoreError,
-  setActiveTab
+  setActiveTab,
+  isMobileMode
 }) => {
   const [sideTab, setSideTab] = useState("issues"); // "issues", "autocorrect", "aienhance"
   const [aiMode, setAiMode] = useState("Make Professional");
@@ -77,7 +79,6 @@ const WritingAssistant = ({
   const [historyIndex, setHistoryIndex] = useState(0);
 
   const updateTextWithHistory = (newVal) => {
-    // Automatically sanitize raw broken HTML tags if injected previously
     const cleanVal = newVal.replace(/<[^>]*>/g, "");
     setText(cleanVal);
     const newHist = history.slice(0, historyIndex + 1);
@@ -181,130 +182,148 @@ const WritingAssistant = ({
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-4">
-      {/* 7 cols Editor, 5 cols Error Analysis Panel - Gap reduced to gap-4 */}
+    <div className={`p-3 sm:p-5 max-w-7xl mx-auto space-y-4 ${isMobileMode ? "text-base" : ""}`}>
+      {/* Mobile Mode High-Readability Notice Banner */}
+      {isMobileMode && (
+        <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>Mobile Touch Mode Active — Extra large text size & enlarged tap targets!</span>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-extrabold uppercase shrink-0">
+            Active
+          </span>
+        </div>
+      )}
+
+      {/* Editor & Side Panel Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Main Editor Section (7 cols - 58%) */}
+        {/* Main Editor Section */}
         <div className="lg:col-span-7 space-y-3">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[520px]">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[480px]">
             {/* Toolbar */}
-            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div className={`px-3 sm:px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 ${isMobileMode ? "py-3" : ""}`}>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleFormatText("**")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold cursor-pointer"
+                  className={`p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Bold (**text**)"
                 >
-                  <Bold className="w-4 h-4" />
+                  <Bold className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
                 <button
                   onClick={() => handleFormatText("*")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 italic cursor-pointer"
+                  className={`p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 italic cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Italic (*text*)"
                 >
-                  <Italic className="w-4 h-4" />
+                  <Italic className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
                 <button
                   onClick={() => handleFormatText("__")}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline cursor-pointer"
+                  className={`p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 underline cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Underline (__text__)"
                 >
-                  <Underline className="w-4 h-4" />
+                  <Underline className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
 
-                <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
+                <div className="h-5 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
 
                 <button
                   onClick={handleUndo}
                   disabled={historyIndex <= 0}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
+                  className={`p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Undo"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
                 <button
                   onClick={handleRedo}
                   disabled={historyIndex >= history.length - 1}
-                  className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
+                  className={`p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Redo"
                 >
-                  <RotateCw className="w-4 h-4" />
+                  <RotateCw className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
 
-                <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
+                <div className="h-5 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
 
                 <button
                   onClick={() => updateTextWithHistory("")}
-                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40 cursor-pointer"
+                  className={`p-2 rounded-xl text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/40 cursor-pointer ${isMobileMode ? "p-2.5 min-w-[40px] flex items-center justify-center" : ""}`}
                   title="Clear Text"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
                 </button>
               </div>
 
+              {/* Action Buttons for Copy & Exports */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer"
+                  className={`px-3 py-1.5 rounded-xl font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer ${isMobileMode ? "py-2 px-3.5 text-xs shadow-xs" : "text-xs"}`}
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-teal-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-4 h-4 text-teal-600" /> : <Copy className="w-4 h-4" />}
                   <span>{copied ? "Copied" : "Copy"}</span>
                 </button>
                 <button
                   onClick={handleExportPDF}
                   disabled={exportingPDF}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  className={`px-3 py-1.5 rounded-xl font-bold bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer ${isMobileMode ? "py-2 px-3.5 text-xs" : "text-xs"}`}
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-4 h-4" />
                   <span>{exportingPDF ? "PDF..." : "PDF"}</span>
                 </button>
                 <button
                   onClick={handleExportDOCX}
                   disabled={exportingDOCX}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  className={`px-3 py-1.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm cursor-pointer ${isMobileMode ? "py-2 px-3.5 text-xs" : "text-xs"}`}
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-4 h-4" />
                   <span>{exportingDOCX ? "DOCX..." : "DOCX"}</span>
                 </button>
               </div>
             </div>
 
-            {/* Editor Area */}
-            <div className="p-4 lg:p-5 flex-1 flex flex-col">
+            {/* Main Text Editor Area with Expanded Mobile Font & Padding */}
+            <div className="p-4 sm:p-5 flex-1 flex flex-col">
               <textarea
                 id="main-editor-textarea"
                 value={text}
                 onChange={(e) => updateTextWithHistory(e.target.value)}
                 placeholder="Write or paste your text here..."
-                className="w-full flex-1 min-h-[360px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans text-base leading-relaxed"
+                className={`w-full flex-1 min-h-[340px] bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none resize-none font-sans leading-relaxed ${
+                  isMobileMode ? "text-lg sm:text-xl p-1" : "text-base"
+                }`}
               />
             </div>
 
             {/* Bottom Bar Stats */}
-            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-4">
-                <span>Words: <strong className="text-slate-900 dark:text-slate-200">{stats.words}</strong></span>
-                <span>Chars: <strong className="text-slate-900 dark:text-slate-200">{stats.characters}</strong></span>
-                <span>Sentences: <strong className="text-slate-900 dark:text-slate-200">{stats.sentences}</strong></span>
-                <span>Reading Time: <strong className="text-slate-900 dark:text-slate-200">{stats.readingTime}</strong></span>
+            <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                <span>Words: <strong className="text-slate-900 dark:text-slate-100 font-extrabold">{stats.words}</strong></span>
+                <span>Chars: <strong className="text-slate-900 dark:text-slate-100 font-extrabold">{stats.characters}</strong></span>
+                <span>Sentences: <strong className="text-slate-900 dark:text-slate-100 font-extrabold">{stats.sentences}</strong></span>
+                <span>Reading Time: <strong className="text-slate-900 dark:text-slate-100 font-extrabold">{stats.readingTime}</strong></span>
               </div>
-              <div className="text-teal-600 dark:text-teal-400 font-semibold">
+              <div className="text-teal-600 dark:text-teal-400 font-bold">
                 Score: {score}/100
               </div>
             </div>
           </div>
 
-          {/* Action Trigger Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {/* Action Trigger Buttons with Enlarged Mobile Touch Targets */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5">
             <button
               onClick={() => setSideTab("issues")}
-              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              className={`rounded-2xl font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                isMobileMode ? "py-3.5 px-3 text-sm border-2" : "py-2.5 px-3 text-xs"
+              } ${
                 sideTab === "issues"
-                  ? "bg-teal-600 text-white"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                  ? "bg-teal-600 text-white border-teal-500"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
               }`}
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
               <span>Errors ({errors.length})</span>
             </button>
 
@@ -313,62 +332,70 @@ const WritingAssistant = ({
                 setSideTab("aienhance");
                 runAiEnhance(aiMode, text);
               }}
-              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              className={`rounded-2xl font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                isMobileMode ? "py-3.5 px-3 text-sm border-2" : "py-2.5 px-3 text-xs"
+              } ${
                 sideTab === "aienhance"
-                  ? "bg-purple-600 text-white"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                  ? "bg-purple-600 text-white border-purple-500"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
               }`}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
               <span>AI Enhance</span>
             </button>
 
             <button
               onClick={() => setActiveTab("parts-of-speech")}
-              className="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              className={`rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                isMobileMode ? "py-3.5 px-3 text-sm" : "py-2.5 px-3 text-xs"
+              }`}
             >
-              <Tags className="w-4 h-4" />
+              <Tags className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
               <span>POS Tags</span>
             </button>
 
             <button
               onClick={() => setActiveTab("translator")}
-              className="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              className={`rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                isMobileMode ? "py-3.5 px-3 text-sm" : "py-2.5 px-3 text-xs"
+              }`}
             >
-              <Languages className="w-4 h-4" />
+              <Languages className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
               <span>Translate</span>
             </button>
 
             <button
               onClick={() => setActiveTab("writing-report")}
-              className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer col-span-2 sm:col-span-1"
+              className={`rounded-2xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 text-white font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer col-span-2 sm:col-span-1 ${
+                isMobileMode ? "py-3.5 px-3 text-sm" : "py-2.5 px-3 text-xs"
+              }`}
             >
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className={isMobileMode ? "w-5 h-5" : "w-4 h-4"} />
               <span>Report</span>
             </button>
           </div>
         </div>
 
-        {/* Error Analysis Panel (5 cols - 42% width) */}
+        {/* Error Analysis Panel with Touch-Friendly Card Spacing */}
         <div className="lg:col-span-5 space-y-3">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 min-h-[520px] flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-4 min-h-[480px] flex flex-col justify-between">
             <div>
               {/* Side-by-Side Header & Navigation Tabs */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex flex-wrap items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 gap-2">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSideTab("issues")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      sideTab === "issues" ? "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 shadow-xs" : "text-slate-400 hover:text-slate-600"
-                    }`}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      sideTab === "issues" ? "bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 shadow-xs border border-teal-200/50" : "text-slate-400 hover:text-slate-600"
+                    } ${isMobileMode ? "text-sm py-2 px-3.5" : ""}`}
                   >
                     Errors ({errors.length})
                   </button>
                   <button
                     onClick={() => setSideTab("autocorrect")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      sideTab === "autocorrect" ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 shadow-xs" : "text-slate-400 hover:text-slate-600"
-                    }`}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      sideTab === "autocorrect" ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 shadow-xs border border-emerald-200/50" : "text-slate-400 hover:text-slate-600"
+                    } ${isMobileMode ? "text-sm py-2 px-3.5" : ""}`}
                   >
                     AI Correct
                   </button>
@@ -377,9 +404,9 @@ const WritingAssistant = ({
                       setSideTab("aienhance");
                       runAiEnhance(aiMode, text);
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      sideTab === "aienhance" ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 shadow-xs" : "text-slate-400 hover:text-slate-600"
-                    }`}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      sideTab === "aienhance" ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 shadow-xs border border-purple-200/50" : "text-slate-400 hover:text-slate-600"
+                    } ${isMobileMode ? "text-sm py-2 px-3.5" : ""}`}
                   >
                     AI Enhance
                   </button>
@@ -392,17 +419,17 @@ const WritingAssistant = ({
 
               {/* Document Metrics Bar */}
               <div className="grid grid-cols-2 gap-3 text-xs my-3">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Readability Rating</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{stats.readability}</p>
+                  <p className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base mt-0.5">{stats.readability}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Detected Tone</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{stats.tone}</p>
+                  <p className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base mt-0.5">{stats.tone}</p>
                 </div>
               </div>
 
-              {/* TAB 1: DETECTED ISSUES LIST WITH WIDER CARDS */}
+              {/* TAB 1: DETECTED ISSUES LIST */}
               {sideTab === "issues" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -412,7 +439,9 @@ const WritingAssistant = ({
                     {errors.length > 0 && (
                       <button
                         onClick={handleApplyAllErrors}
-                        className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                        className={`px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs transition-colors cursor-pointer shadow-sm ${
+                          isMobileMode ? "py-2.5 px-4 text-sm" : ""
+                        }`}
                       >
                         Fix All ({errors.length}) Errors
                       </button>
@@ -422,47 +451,50 @@ const WritingAssistant = ({
                   {errors.length === 0 ? (
                     <div className="p-8 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center space-y-2">
                       <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
-                      <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">Perfect Writing!</p>
+                      <p className="text-base font-extrabold text-emerald-900 dark:text-emerald-300">Perfect Writing!</p>
                       <p className="text-xs text-emerald-700 dark:text-emerald-400">No spelling, grammar, or punctuation errors detected.</p>
                     </div>
                   ) : (
-                    <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                       {errors.map((err) => (
                         <div
                           key={err.id}
-                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs shadow-xs"
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3 shadow-xs"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs">
-                              <AlertCircle className="w-4 h-4" />
+                            <span className="font-extrabold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 text-xs sm:text-sm">
+                              <AlertCircle className="w-4.5 h-4.5" />
                               {err.type}
                             </span>
                             <button
                               onClick={() => onIgnoreError(err.id)}
-                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                               title="Ignore"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-5 h-5" />
                             </button>
                           </div>
 
-                          <div className="space-y-1 text-xs">
+                          <div className="space-y-1.5 text-xs sm:text-sm">
                             <p className="text-slate-600 dark:text-slate-300">
                               Incorrect: <span className="line-through text-rose-500 font-mono font-bold">{err.original}</span>
                             </p>
                             <p className="text-teal-700 dark:text-teal-300 font-bold">
                               Suggestion: <span className="underline font-mono">{err.suggestion}</span>
                             </p>
-                            <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[11px]">
+                            <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-xs">
                               {err.explanation}
                             </p>
                           </div>
 
+                          {/* Large Tap Target Fix Button */}
                           <button
                             onClick={() => onApplyCorrection(err)}
-                            className="w-full py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                            className={`w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
+                              isMobileMode ? "py-3.5 text-base" : ""
+                            }`}
                           >
-                            <Check className="w-4 h-4" />
+                            <Check className="w-4.5 h-4.5" />
                             <span>Apply Fix</span>
                           </button>
                         </div>
@@ -480,22 +512,26 @@ const WritingAssistant = ({
                     <span>AI Corrected Output (Side-by-Side)</span>
                   </h4>
 
-                  <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[250px] whitespace-pre-wrap">
+                  <div className={`p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 font-medium text-slate-900 dark:text-slate-100 leading-relaxed min-h-[250px] whitespace-pre-wrap ${
+                    isMobileMode ? "text-base sm:text-lg" : "text-sm"
+                  }`}>
                     {correctedText || <span className="italic text-slate-400">Corrected text will appear here...</span>}
                   </div>
 
                   <button
                     onClick={handleApplyAICorrected}
                     disabled={!text.trim() || text === correctedText}
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className={`w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+                      isMobileMode ? "py-3.5 text-base" : ""
+                    }`}
                   >
-                    {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                    {appliedAI ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
                     <span>{appliedAI ? "Applied All AI Corrections!" : "Replace with Corrected Text"}</span>
                   </button>
                 </div>
               )}
 
-              {/* TAB 3: SIDE-BY-SIDE AI ENHANCE & STYLES BOX */}
+              {/* TAB 3: SIDE-BY-SIDE AI ENHANCE BOX */}
               {sideTab === "aienhance" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -507,7 +543,7 @@ const WritingAssistant = ({
                   </div>
 
                   {/* Mode Badges */}
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {AI_MODES.map((m) => (
                       <button
                         key={m}
@@ -515,18 +551,20 @@ const WritingAssistant = ({
                           setAiMode(m);
                           runAiEnhance(m, text);
                         }}
-                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        className={`px-3 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                           aiMode === m
-                            ? "bg-purple-600 text-white shadow-xs"
+                            ? "bg-purple-600 text-white shadow-sm"
                             : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
-                        }`}
+                        } ${isMobileMode ? "text-sm py-2.5 px-3.5" : ""}`}
                       >
                         {m.replace("Make ", "")}
                       </button>
                     ))}
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-sm text-slate-900 dark:text-slate-100 min-h-[200px] whitespace-pre-wrap leading-relaxed">
+                  <div className={`p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 text-slate-900 dark:text-slate-100 min-h-[200px] whitespace-pre-wrap leading-relaxed ${
+                    isMobileMode ? "text-base sm:text-lg" : "text-sm"
+                  }`}>
                     {aiLoading ? (
                       <div className="flex items-center justify-center h-40 text-purple-600">
                         <RefreshCw className="w-6 h-6 animate-spin" />
@@ -539,9 +577,11 @@ const WritingAssistant = ({
                   <button
                     onClick={handleApplyEnhanced}
                     disabled={!enhancedText || aiLoading}
-                    className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className={`w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+                      isMobileMode ? "py-3.5 text-base" : ""
+                    }`}
                   >
-                    {appliedAI ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                    {appliedAI ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
                     <span>{appliedAI ? "Applied AI Enhancement!" : "Apply AI Enhancement"}</span>
                   </button>
                 </div>

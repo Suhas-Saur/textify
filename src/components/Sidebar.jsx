@@ -12,7 +12,9 @@ import {
   Sun,
   Moon,
   Linkedin,
-  Feather
+  Feather,
+  Smartphone,
+  Monitor
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -27,7 +29,7 @@ const NAV_ITEMS = [
   { id: "dictionary", label: "My Dictionary", icon: BookMarked }
 ];
 
-const Sidebar = ({ activeTab, setActiveTab, darkMode, setDarkMode, isMobileOpen, setIsMobileOpen }) => {
+const Sidebar = ({ activeTab, setActiveTab, darkMode, setDarkMode, isMobileOpen, setIsMobileOpen, isMobileMode, setIsMobileMode }) => {
   return (
     <>
       {/* Mobile backdrop */}
@@ -61,8 +63,8 @@ const Sidebar = ({ activeTab, setActiveTab, darkMode, setDarkMode, isMobileOpen,
             </div>
           </div>
 
-          {/* Navigation Links with Full Font Size */}
-          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-175px)]">
+          {/* Navigation Links */}
+          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -87,12 +89,30 @@ const Sidebar = ({ activeTab, setActiveTab, darkMode, setDarkMode, isMobileOpen,
           </nav>
         </div>
 
-        {/* Footer / Theme & Profile Badge */}
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+        {/* Footer / Theme & Mobile View Switcher */}
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          {/* Mobile Mode Switcher */}
+          <button
+            onClick={() => setIsMobileMode(!isMobileMode)}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+              isMobileMode
+                ? "bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow-sm"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              {isMobileMode ? <Smartphone className="w-4 h-4 text-slate-950" /> : <Monitor className="w-4 h-4" />}
+              <span>{isMobileMode ? "Mobile Mode ON" : "Desktop Mode"}</span>
+            </span>
+            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-black/20 text-current">
+              {isMobileMode ? "Touch" : "PC"}
+            </span>
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-2 pointer-events-none">
               {darkMode ? <Moon className="w-4 h-4 text-teal-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
@@ -108,11 +128,11 @@ const Sidebar = ({ activeTab, setActiveTab, darkMode, setDarkMode, isMobileOpen,
             href="https://www.linkedin.com/in/suhas-s-081b84335"
             target="_blank"
             rel="noopener noreferrer"
-            className="block p-3 rounded-xl bg-gradient-to-r from-teal-900/10 to-emerald-900/10 dark:from-teal-950/40 dark:to-emerald-950/40 border border-teal-200/50 dark:border-teal-800/50 hover:shadow-sm transition-all group"
+            className="block p-2.5 rounded-xl bg-gradient-to-r from-teal-900/10 to-emerald-900/10 dark:from-teal-950/40 dark:to-emerald-950/40 border border-teal-200/50 dark:border-teal-800/50 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-[11px] flex items-center justify-center shadow-xs">
                   SS
                 </div>
                 <div>

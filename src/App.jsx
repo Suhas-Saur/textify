@@ -26,6 +26,13 @@ const App = () => {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
+  // Mobile Mode Persistence (Auto-detect mobile screen or saved preference)
+  const [isMobileMode, setIsMobileMode] = useState(() => {
+    const saved = localStorage.getItem("textify_mobile_mode");
+    if (saved !== null) return JSON.parse(saved);
+    return window.innerWidth < 768;
+  });
+
   useEffect(() => {
     localStorage.setItem("textify_dark", JSON.stringify(darkMode));
     if (darkMode) {
@@ -34,6 +41,10 @@ const App = () => {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem("textify_mobile_mode", JSON.stringify(isMobileMode));
+  }, [isMobileMode]);
 
   // Custom Dictionary Persistence
   const [dictionary, setDictionary] = useState(() => {
@@ -90,7 +101,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200">
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-200 ${isMobileMode ? "text-base leading-relaxed" : ""}`}>
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
@@ -99,20 +110,24 @@ const App = () => {
         setDarkMode={setDarkMode}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
+        isMobileMode={isMobileMode}
+        setIsMobileMode={setIsMobileMode}
       />
 
-      {/* Main Content Area (Sidebar padding lg:pl-60) */}
+      {/* Main Content Area */}
       <div className="lg:pl-60 flex-1 flex flex-col min-h-screen">
         <Navbar
           activeTab={activeTab}
           setIsMobileOpen={setIsMobileOpen}
           onResetText={handleResetText}
           onExportPDF={handleExportPDF}
+          isMobileMode={isMobileMode}
+          setIsMobileMode={setIsMobileMode}
         />
 
         <main className="flex-1 pb-12">
           {activeTab === "dashboard" && (
-            <Dashboard stats={{ ...stats, score }} setActiveTab={setActiveTab} />
+            <Dashboard stats={{ ...stats, score }} setActiveTab={setActiveTab} isMobileMode={isMobileMode} />
           )}
 
           {activeTab === "writing-assistant" && (
@@ -126,6 +141,7 @@ const App = () => {
               onApplyCorrection={handleApplyCorrection}
               onIgnoreError={handleIgnoreError}
               setActiveTab={setActiveTab}
+              isMobileMode={isMobileMode}
             />
           )}
 
@@ -137,19 +153,20 @@ const App = () => {
               onApplyAll={handleApplyAll}
               text={text}
               setText={setText}
+              isMobileMode={isMobileMode}
             />
           )}
 
-          {activeTab === "parts-of-speech" && <PartsOfSpeech text={text} />}
+          {activeTab === "parts-of-speech" && <PartsOfSpeech text={text} isMobileMode={isMobileMode} />}
 
-          {activeTab === "ai-improve" && <AIImprove text={text} setText={setText} />}
+          {activeTab === "ai-improve" && <AIImprove text={text} setText={setText} isMobileMode={isMobileMode} />}
 
-          {activeTab === "paragraph-generator" && <ParagraphGenerator />}
+          {activeTab === "paragraph-generator" && <ParagraphGenerator isMobileMode={isMobileMode} />}
 
-          {activeTab === "translator" && <Translator text={text} />}
+          {activeTab === "translator" && <Translator text={text} isMobileMode={isMobileMode} />}
 
           {activeTab === "writing-report" && (
-            <WritingReport text={text} stats={stats} errors={errors} score={score} />
+            <WritingReport text={text} stats={stats} errors={errors} score={score} isMobileMode={isMobileMode} />
           )}
 
           {activeTab === "dictionary" && (
@@ -157,6 +174,7 @@ const App = () => {
               dictionary={dictionary}
               onAddWord={handleAddWord}
               onRemoveWord={handleRemoveWord}
+              isMobileMode={isMobileMode}
             />
           )}
         </main>
