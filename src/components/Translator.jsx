@@ -34,6 +34,13 @@ const Translator = ({ text }) => {
     }
   };
 
+  // Sync inputText when text prop changes
+  useEffect(() => {
+    if (text !== undefined) {
+      setInputText(text);
+    }
+  }, [text]);
+
   // Run translation automatically on mount or when inputs/languages change
   useEffect(() => {
     runTranslation(inputText, targetLang);

@@ -66,27 +66,48 @@ const App = () => {
     localStorage.setItem("textify_dict", JSON.stringify(updated));
   };
 
+  // Track ignored errors for current session
+  const [ignoredErrorIds, setIgnoredErrorIds] = useState(new Set());
+
   // Real-Time Analysis
   const stats = useMemo(() => calculateTextStats(text), [text]);
-  const { errors, score, correctedText } = useMemo(
+  const { errors: rawErrors, score, correctedText } = useMemo(
     () => checkGrammarAndSpelling(text, dictionary),
     [text, dictionary]
   );
 
+  const errors = useMemo(
+    () => rawErrors.filter((e) => !ignoredErrorIds.has(e.id)),
+    [rawErrors, ignoredErrorIds]
+  );
+
   const handleApplyCorrection = (err) => {
-    setText((prev) => prev.replace(err.original, err.suggestion));
+    setText((prev) => {
+      if (prev.includes(err.original)) {
+        return prev.replace(err.original, err.suggestion);
+      }
+      const escaped = err.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (regex.test(prev)) {
+        return prev.replace(regex, err.suggestion);
+      }
+      return prev;
+    });
+    setIgnoredErrorIds((prev) => new Set([...prev, err.id]));
   };
 
   const handleIgnoreError = (errId) => {
-    // Ignored dynamically for current session
+    setIgnoredErrorIds((prev) => new Set([...prev, errId]));
   };
 
   const handleApplyAll = () => {
     setText(correctedText);
+    setIgnoredErrorIds(new Set());
   };
 
   const handleResetText = () => {
     setText("");
+    setIgnoredErrorIds(new Set());
   };
 
   const handleExportPDF = () => {
